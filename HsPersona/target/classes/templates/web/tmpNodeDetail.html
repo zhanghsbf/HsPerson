@@ -1,0 +1,224 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+<div th:include="common/webHeader.html" />
+  <head>
+    <title>客户详情</title>
+	<link href="/css/webDetails.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="/script/d3.js"></script>
+	<script type="text/javascript" src="/script/d3.layout.cloud.js"></script>
+	<script type="text/javascript" src="/script/D3Chart.js"></script>
+  </head>
+  
+  <body>
+  	<div th:include="common/webTopper.html"/>
+    <div class="main_body">
+    	<!-- 基本信息 -->
+    	<br>
+    	<div>
+			<div class="info_block_title"><span class="info_block_title_span">&nbsp;</span>基本信息</div>
+			<div style="width: 200px;text-align: left;margin: 0;padding: 0;margin-right: 50px; font-weight: bolder;font-family:  微软雅黑">
+				<div style="margin-top: 20px;">
+					<span style="font-size: 16px;text-align:center ;margin: 0;">[[${nodeDetailVO.person.name}]]</span>
+				</div>
+				<div class="node_image" style="width: 100px;height: 115px;"><img alt="" style="width: 100px;height: 115px;" src="/images/default_person.png">
+				</div>
+			</div>
+			<div style="margin-left: 330px;">
+				<div class="base_info_item">
+					<span class="base_info_item_name">年龄</span>
+					<span class="base_info_item_value">[[${nodeDetailVO.person.age}]] </span>
+					<span class="base_info_item_name">性别</span>
+					<span class="base_info_item_value">[[${nodeDetailVO.person.gender}]]</span>
+				</div>
+				<div class="base_info_item">
+					<span class="base_info_item_name">手机号</span>
+					<span class="base_info_item_value">[[${nodeDetailVO.person.phone}]] </span>
+					<span class="base_info_item_name">注册时间</span>
+					<span class="base_info_item_value">[[${nodeDetailVO.person.regTime}]]</span>
+				</div>
+				<div class="base_info_item">
+					<span class="base_info_item_name">家庭住址</span>
+					<span class="base_info_item_value">[[${nodeDetailVO.person.address}]] </span>
+					<span class="base_info_item_name"></span>
+					<span class="base_info_item_value"></span>
+				</div>
+				<div class="base_info_item">
+					<span class="base_info_item_name">总交易次数</span>
+					<span class="base_info_item_value">[[${nodeDetailVO.person.refer1}]] </span>
+					<span class="base_info_item_name">总交易金额</span>
+					<span class="base_info_item_value">[[${nodeDetailVO.person.refer2}]]</span>
+				</div>
+			</div>
+			<div>
+				<div class="info_block_title"><span class="info_block_title_span">&nbsp;</span>综合描述</div>
+				<div class="base_info_block">
+					<div class="base_info_item">
+						<div class="base_info_item_value" style="width: 100%"> [[${nodeDetailVO.person.description}]] </div>
+					</div>
+				</div>
+			</div>
+
+			<div>
+				<div class="info_block_title"><span class="info_block_title_span">&nbsp;</span>用户评分 ：[[${nodeDetailVO.baseInfo.score}]]  -- （预留）</div>
+			</div>
+    	</div>
+		<!-- 标签信息 -->
+		<div th:if="${nodeDetailVO.tagInfo!=null}" >
+			<br>
+			<div>
+				<div class="info_block_title">
+					<span class="info_block_title_span">&nbsp;</span>
+					[[${nodeDetailVO.tagInfo.title}]]
+				</div>
+				<div class="tag_list">
+					<span class="tag_list_item" th:each="tagItem : ${nodeDetailVO.tagInfo.panelTagInfoItems}">
+						<a href="#" th:if="${tagItem.isLatest==1}" th:onclick="showHistory([[${tagItem.ruleTagId}]])">[[${tagItem.tagName}]]</a>
+					</span>
+				</div>
+				<div class="tag_chart" id="tagChart"></div>
+			</div>
+		</div>
+    </div>
+	<div th:include="common/webFooter.html"/>
+	<script type="text/javascript" th:inline="javascript">
+		var lineData = [];
+		$.each([[ ${ nodeDetailVO.tagInfo.panelTagInfoItems }]],function(index,item){
+			lineData[lineData.length]=[item.tagTime,item.tagValue,item.ruleTagId];
+		})
+	</script>
+
+    <script>
+    var width=500;
+    var height=450;
+
+	function drawLine(svg,x1,y1,x2,y2){
+		svg.append("line")
+				.attr("x1",x1)
+				.attr("y1",y1)
+				.attr("x2",x2)
+				.attr("y2",y2)
+				.attr("style","fill:none;stroke:black;shape-rendering:crispEdges;")
+	}
+	function drawRect(svg,x,y,w,h){
+		svg.append("rect")
+				.attr("x",x)
+				.attr("y",y)
+				.attr("width",w)
+				.attr("height",h)
+				.attr("style","fill:#FFFFFF;stroke:none;")
+	}
+	function drawD3TagHistory(tagArray,data){
+		var chart=new D3c.Chart();
+		var m=[40,90,100,40]
+		var w=1046;
+		var h=m[0]+m[1]+50*tagArray.length;
+		//画画布
+		var svg=chart.svg({
+			width:w,
+			height:h,
+			target:'tagChart',
+			bgColor:"#FAFAFA"
+		});
+		var g= svg.append("g");
+		drawLine(svg,m[2],h-m[1],w-m[3],h-m[1]);
+		drawLine(svg,m[2],m[0],m[2],h-m[1]);
+		var vd = (h-m[0]-m[1])/tagArray.length;
+		var hd = (w-m[2]-m[3])/data.length;
+		for(var i=0;i<tagArray.length;i++){
+			drawLine(svg,m[2]-5,h-m[1]-vd*(i+0.5),m[2],h-m[1]-vd*(i+0.5));//标尺
+			drawRect(svg,m[2]+1,h-m[1]-vd*(i+1)+1,w-m[2]-m[3],vd-2);
+			drawLine(svg,m[2],h-m[1]-vd*(i+1),w-m[3],h-m[1]-vd*(i+1));
+			chart.text({
+				svg:svg,
+				text:tagArray[i][1],
+				font:[12,"Verdana","end"],
+				xy:[m[2]-7,h-m[1]-vd*(i+0.5)+5]
+			});
+		}
+		for(var i=0;i<data.length;i++){
+			var x = m[2]+hd*(i+0.5),y=h-m[1];
+			drawLine(svg,x,y,x,y+5);
+			chart.text({
+				svg:svg,
+				text:data[i][0],
+				font:[12,"Verdana","end"],
+				transform:"rotate(-45,"+x+","+(y+20)+")",
+				xy:[m[2]+hd*(i+0.5),h-m[1]+20]
+			});
+		}
+		var value = d3.svg.line()
+				.x(function(d,i){return m[2]+hd*(i+0.5);})
+				.y(function(d){
+					for(var i=0;i<tagArray.length;i++){
+						if(d[1]==tagArray[i][0]){
+							return h-m[1]-vd*(i+0.5);
+						}
+					}
+					return 0;
+				});
+		svg.append("path")
+				.style("stroke",'#FFFFFF')
+				.transition()
+				.duration(2000)
+				.style("stroke","#1F77B4")
+				.style("stroke-width",2)
+				.style("fill","none")
+				.attr("d",value(data))
+		svg.selectAll("circle")
+				.data(data)
+				.enter()
+				.append("circle")
+				.style("stroke",'#1F77B4')
+				.style("fill","white")
+				.style("stroke-width",2)
+				.attr('r',0)
+				.attr('cx',function(d,i){return m[2]+hd*(i+0.5)})
+				.attr('cy',function(d){
+					for(var i=0;i<tagArray.length;i++){
+						if(d[1]==tagArray[i][0]){
+							return h-m[1]-vd*(i+0.5);
+						}
+					}
+					return 0;
+				})
+				.transition()
+				.duration(1000)
+				.delay(function(d,i){
+					return i*100;
+				})
+				.attr('r',4);
+	}
+	function showHistory(ruleTagId){
+		$("#tagChart").html("");
+		$.ajax({
+			type : 'POST',
+			url : "/web/detail/getTagByRuleId",
+			data : {'ruleTagId':ruleTagId},
+			dataType : 'json',
+			success : function(d) {
+				var json=eval(d);
+				if(json.success==1)
+				{
+					var tag = [];
+					for(var i=0;i<json.rows.length;i++){
+						tag[tag.length] = [json.rows[i].value,json.rows[i].name];
+					}
+					var data = [];
+					for(var i=0;i<lineData.length;i++){
+						if(lineData[i][2]==ruleTagId){
+							data[data.length]=[lineData[i][0],lineData[i][1]];
+						}
+					}
+					drawD3TagHistory(tag,data);
+				}
+				else
+				{
+					alert(json.info);
+				}
+			}
+		});
+	}
+	showHistory(lineData[0][2]);
+    </script>
+  </body>
+</html>

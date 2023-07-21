@@ -1,0 +1,126 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+<head>
+	<div th:include="common/header.html"/>
+	<script type="text/javascript" src="/script/d3.js"></script>
+	<style>
+	.panel-div{height:100%;border:0px;}
+	.panel-header{border-top:0px;border-left:0px;border-right:0px;}
+	</style>
+</head>
+<body>
+	<div class="easyui-panel panel-div" title="标签力学图">
+		<div id="tb" style="border-bottom:1px solid #95B8E7;"></div>
+		<div id="graphDiv">
+		</div>
+	</div>
+	<script type="text/javascript" th:inline="none">
+	$(function () { 
+		$('#tb').toolbar({
+	        items:[{
+	        	text:'请选择节点：'
+	        },{
+	        	text:'<select id="tagSet"></select>'
+	        },{
+	            iconCls:"icon-search",
+	            text:"查询",
+	            handler:doSearch
+	        }]
+	    });
+		$('#tagSet').combotree({
+	        lines:true,
+			url:"/tag/tagNet/netTree?type=1",
+			width:250,
+			panelHeight:350
+		});
+	});
+	function doSearch(){
+		var id=$('#tagSet').combotree('getValue');
+		if(id==""){
+			$.messager.alert('提示','请选择需要查询的节点'); 
+            return
+		}
+		$("#graphDiv").html('<svg id="graph"></svg>');
+		$.ajax({  
+            type: "POST",
+            url:"/tag/tagNet/getTagNetData",
+            data: {id:id},
+            success: function (data) {
+                var json=eval('('+data+')');
+                if(json.success==1){
+                	var width = 1060;
+                	var height = 480;
+                	var svg = d3.select("#graph")
+                		.attr("width", width)
+                		.attr("height", height);
+                	var color = d3.scale.category10();
+                	var force = d3.layout.force()
+                		.charge(-250)
+                		.linkDistance(60)
+                		.linkStrength(1)
+                		.size([width, height]);
+                	force
+                		.nodes(json.data.nodes)
+                		.links(json.data.links)
+                		.start();
+                	var link = svg.selectAll(".link")
+                		.data(json.data.links)
+                		.enter()
+                		.append("line")
+                		.attr("class", "link")
+                		.attr("stroke",function(v){
+                			return color(v.value+4);
+                		})
+                		.attr("stroke-opacity","0.9")
+                		.style("stroke-width",2);
+                	var node = svg.selectAll(".node")
+                		.data(json.data.nodes)
+                		.enter()
+                		.append("g")
+                		.call(force.drag);
+                	node.append("circle")
+                		.attr("class", "node")
+                		.attr("r",function(d){return d.group/100;})
+                		.style("fill", function(d) { return color(d.group%100-1); });
+                	node.append("title")
+                		.text(function(d) { return d.name; });
+                	node.append("text")
+                		.attr("dy", ".3em")
+                		.attr("class","nodetext")
+                		.style("text-anchor", "middle")
+                		.text(function(d) { return d.name; });
+                	force.on("tick", function() {
+                		link.attr("x1", function(d) { return d.source.x; })
+                		.attr("y1", function(d) { return d.source.y; })
+                		.attr("x2", function(d) { return d.target.x; })
+                		.attr("y2", function(d) { return d.target.y; });
+                		node.attr("transform", function(d){ return "translate("+d.x+"," + d.y + ")";});
+                	})
+                	var marksY = (height-20*7)/2;
+					var t=this;
+					var legendAttr=[[10,10,0],[10,10,0],[10,10,0],[10,10,0],[0,0,0],[2,10,5],[2,10,5]]
+					svg.append("g").selectAll("rect")
+						.data(['分类节点','概念节点','规则节点','标签节点','　','父子关系','朋友关系'])
+						.enter()
+						.append('rect')
+						.attr('x',function(d,i){
+							svg.append("g")
+								.append("text")
+								.attr("x",width-80)
+								.attr("y",marksY+20*i+9)
+								.text(d);
+							return width-100;
+						})
+						.attr('y',function(d,i){return marksY+20*i+legendAttr[i][2];})
+						.attr('height',function(d,i){return legendAttr[i][0]})
+						.attr('width',function(d,i){return legendAttr[i][1]})
+						.attr("fill",function(d,i){return color(i);})
+						.style("stroke",function(d,i){return color(i);})
+                }else{
+                	$.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                }
+            }
+        });
+	}
+	</script>
+</body>

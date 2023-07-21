@@ -1,0 +1,38 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+<head>
+    <style>.btn-div{padding-left:20px;}</style>
+</head>
+<body>
+<div th:include="common/header.html"/>
+<div id="panel" class="easyui-panel" title="角色权限列表" border="false" fit="true">
+    <div id="tb"></div>
+    <div id="vf">
+        <ul id="tt"></ul>
+    </div>
+</div>
+<script type="text/javascript" th:inline="javascript">
+    var roleId = [[${id}]];
+</script>
+<script type="text/javascript" th:inline="none">
+$(function(){
+    $('#tb').toolbar({
+        items:[{
+            iconCls:"icon-back",
+            text:"返回",
+            handler:doBack
+        }]
+    });
+    $('#vf').attr('style',"border-top:1px solid #cccccc;");
+    $('#tt').tree({
+        lines:true,
+        url:"/system/menu/treeHavePermission?roleId="+roleId,
+        width:300
+    });
+});
+function doBack()
+{
+    location.href="/system/role/to";
+}
+</script>
+</body>

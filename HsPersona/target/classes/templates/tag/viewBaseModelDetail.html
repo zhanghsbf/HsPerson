@@ -1,0 +1,78 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+<head>
+    <div th:include="common/header.html"/>
+    <style>
+        * { font-size: 14px; font-family: Helvetica; }
+        .panel_div { line-height: 25px; padding-left: 30px; height: 100%; overflow: auto; }
+        A:link { color: #C80000; TEXT-DECORATION: none; border-bottom: dotted 1px #C80000; }
+        A:visited { COLOR: #C80000; TEXT-DECORATION: none; border-bottom: dotted 1px #C80000; }
+        A:hover { COLOR: #FFFFFF; text-decoration: none; background-color: #C80000 }
+        A:active { COLOR: #C80000; text-decoration: none; border-bottom: dotted 1px #C80000; }
+        .inner_tbl tr td { padding-left: 3px; padding-right: 3px; border: solid 1px #95B8E7; }
+        .panel-header { border-top: 0px; border-left: 0px; border-right: 0px; }
+        .title_div { font-size: 18px; font-family: '微软雅黑' }
+        .title_div a { font-size: 18px; font-family: '微软雅黑' }
+    </style>
+</head>
+<body>
+<table height=100% width=100% style="" border=0 cellpadding=0 cellspacing=0>
+    <tr height=27>
+        <td class='panel-header panel-title'>数据模型组织结构</td>
+    </tr>
+    <tr>
+        <td>
+            <div class="panel_div">
+                <br>
+                <div class="title_div">
+                    【<a href="#" onclick="JavaScript:history.back(-1);">返回</a>】
+                    <a href="/tag/tagBaseModel/modelWeb">首页</a>
+                    [[${tagBaseType.code}]] : [[${tagBaseType.name}]]
+                </div>
+                <br>
+                <table cellspacing=3 class="inner_tbl">
+                    <tr height=35>
+                        <td width=120 align=center bgcolor=#E0E0E0>属性要素编码</td>
+                        <td width=150 align=center bgcolor=#E0E0E0>属性要素名称</td>
+                        <td width=120 align=center bgcolor=#E0E0E0>属性类型</td>
+                        <td width=140 align=center bgcolor=#E0E0E0>来源</td>
+                        <td width=40 align=center bgcolor=#E0E0E0>长度</td>
+                        <td width=40 align=center bgcolor=#E0E0E0>精度</td>
+                        <td width=220 align=center bgcolor=#E0E0E0>描述</td>
+                    </tr>
+                    <tr th:if="${baseTypeFieldList.size}>0" th:each="s:${baseTypeFieldList}" height="25">
+                        <td bgcolor=#E0E0E0>[[${s.dataTypeElement.code}]]</td>
+                        <td>[[${s.dataTypeElement.name}]]</td>
+                        <td>
+                            <a th:if="${s.selfBaseType.type}==3"
+                               th:href="@{/tag/tagBaseModel/modelWeb(action='detail',key=${s.selfBaseType.code})}">
+                                [[${s.selfBaseType.code}]]
+                            </a>
+                            <span th:if="${s.selfBaseType.type}!=3">
+                                [[${s.selfBaseType.code}]]
+                            </span>
+                        </td>
+                        <td>
+                            <span th:if="${#strings.equals(tagBaseType.id, s.belongBaseType.id)}">Self</span>
+                            <span th:if="${!#strings.equals(tagBaseType.id, s.belongBaseType.id)}">
+                            Extend: <a th:href="@{/tag/tagBaseModel/modelWeb(action='detail',key=${s.belongBaseType.code})}">
+                            [[ ${s.belongBaseType.code} ]]
+                            </span>
+                        </a>
+                        </td>
+                        <td align=center>[[ ${s.typeLength} ]]</td>
+                        <td align=center>[[ ${s.typePrecision} ]]</td>
+                        <td>[[ ${s.memo} ]] [[ ${s.tmp} ]]</td>
+                    </tr>
+                    <tr height="25" th:if="${baseTypeFieldList.size}==0">
+                        <td colspan=7 align=center>
+                            没有任何属性
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <br>
+        </td>
+    </tr>
+</table>
+</body>

@@ -1,0 +1,17 @@
+body{margin:0px;padding:0px;text-align:center;}
+.top_bar{width:100%;height:95px;line-height:95px;background:#00A2CA;}
+.top_center{width:1228px;margin:0px auto;height:100%;}
+.top_left{width:570px;float:left;font-size:24px;font-family:'Microsoft YaHei';color:#FFFFFF;background-image:url(../images/logo.png);background-repeat:no-repeat;text-align:left;}
+.top_right{width:650px;float:right;text-align:right;font-size:14px;font-family:'Microsoft YaHei';color:#D7EDF3;}
+.top_right a{text-decoration:none;}
+.top_right a:link{color:#D7EDF3;}
+.top_right a:visited{color:#D7EDF3;}
+.top_right a:hover{color:#FFFFFF;}
+.banner{width:1228px;margin:0px auto;height:460px;background-image:url(../images/banner.jpg);}
+.ad_div{width:1228px;margin:0px auto;height:250px;}
+.ad1_div{width:280px;height:250px;background-image:url(../images/ad1.jpg);float:left;}
+.ad2_div{width:306px;height:250px;background-image:url(../images/ad2.jpg);float:left;}
+.ad3_div{width:306px;height:250px;background-image:url(../images/ad3.jpg);float:left;}
+.ad4_div{width:306px;height:250px;background-image:url(../images/ad4.jpg);float:right;}
+.ad5_div{width:938px;height:250px;float:right;}
+.ad6_div{width:622px;height:250px;float:right;}

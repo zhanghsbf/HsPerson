@@ -1,0 +1,301 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+<head>
+	<div th:include="common/header.html"/>
+<style>
+.left-div{width:530px;border-left:0px;border-top:0px;border-bottom:0px;}
+.layout-panel-west .panel-header{border-left:0px;border-top:0px;}
+.right-div{height:150px;border:0px;}
+.layout-panel-center .panel-header{border-left:0px;border-top:0px;border-right:0px;}
+
+.panel-title a:link{color:blue}
+.panel-title a:visited{color:blue;}
+.panel-title a:hover{color:blue;}
+.datagrid-cell a:hover{color:blue;}
+.datagrid-cell a:visited{color:blue;}
+.datagrid-cell a:hover{color:blue;}
+</style>
+</head>
+<body>
+	<div class="easyui-layout main-div">
+        <div region="west" class="left-div">
+            <table id="dg1" toolbar="#tb1"></table>
+		    <div id="tb1">
+		    	&nbsp;编码：<input id="typeCode" style="width:80px"/>
+		        <a href="#" onclick="doSearch()" class="easyui-linkbutton" iconCls="icon-search" plain="true">查询</a>
+		        <sys:permission code="editExtModelMng">
+		        <a href="#" onclick="doImport()" class="easyui-linkbutton" iconCls="icon-down" plain="true">引入</a>
+		        </sys:permission>
+		        <a href="#" onclick="doBack()" class="easyui-linkbutton" iconCls="icon-back" plain="true">返回</a>
+		    </div>
+        </div>
+        <div region="center" class="right-div" >
+		    <table id="dg2" toolbar="#tb2"></table>
+		    <div id="tb2">
+		        <a href="#" onclick="doViewExpress()" class="easyui-linkbutton" iconCls="icon-view" plain="true">查看表述</a>
+		    </div>
+        </div>
+    </div>
+    <div id="w3" class="easyui-window" style="width:700;height:350;text-align:center;background:#f1f6ff" title="行业扩展模型属性表述（替换处用\${n}标记,n从0开始）" modal="true">
+        <table id="dg3"></table>
+    </div>
+    <div id="w4" class="easyui-window" style="width:900;height:450;text-align:center;background:#f1f6ff" title="基础模型类列表" modal="true">
+        <table id="tg4" toolbar="#tb4"></table>
+		    <div id="tb4">
+		       &nbsp;编码：<input id="typeCodeBase" style="width:80px"/>
+		        <a href="#" onclick="doSearchBase()" class="easyui-linkbutton" iconCls="icon-search" plain="true">查询</a>
+		        <a href="#" onclick="doAllSelect()" class="easyui-linkbutton" iconCls="icon-submitAudit" plain="true">全部选择</a>
+		        <a href="#" onclick="doUnSelect()" class="easyui-linkbutton" iconCls="icon-unpassAudit" plain="true">取消选择</a>
+		        <sys:permission code="editExtModelMng">
+		        <a href="#" onclick="doSure()" class="easyui-linkbutton" iconCls="icon-ok" plain="true">确定选择</a>
+		        </sys:permission>
+		        <a href="#" onclick="doClose()" class="easyui-linkbutton" iconCls="icon-cancel" plain="true">关闭</a>
+		    </div>
+    </div>
+	<script type="text/javascript">
+		var industryValue = '[[${industryValue}]]';
+		var industryName = '[[${industryName}]]';
+	</script>
+    <script type="text/javascript" th:inline="none">
+    	var viewCode=[],viewId=[];
+        $(function () { 
+        	$('#w3').window('close');
+        	$('#w4').window('close');
+            $('#dg1').datagrid({
+            	url:"/tag/tagExtModel/init?industryType="+industryValue,
+                rownumbers:true,
+                title:'行业扩展模型数据类型（<font color="blue">'+industryName+'</font>）',
+                border:false,
+                fit: true,
+                singleSelect:true,
+                pagination:true,
+                pageSize: 15,
+                pageList: [15,20,30],
+                beforePageText: '第',
+                afterPageText: '页    共 {pages} 页',  
+                displayMsg: '当前显示 {from} - {to} 条记录   共 {total} 条记录',
+                columns:[[
+                    {field:'code',title:'类编码',width:100,halign:'center',sortable:true},
+                    {field:'parentTypeCode',title:'父类',width:100,halign:'center',sortable:true},
+                    {field:'name',title:'类名称',width:100,halign:'center',sortable:true},
+                    {field:'typeName',title:'类类型',width:60,align:'center',sortable:true},
+                    {field:'isFirstShow',title:'首先显示',width:60,align:'center',sortable:true,formatter:isOrNo},
+                    {field:'memo',title:'类说明',width:170,halign:'center',sortable:true}
+                ]],
+                onClickRow:function(index,node){
+                	$("#dg2").datagrid('getPanel').panel('setTitle','行业扩展模型数据类型属性（<font color=blue>'+node.code+'</font>）');
+                	viewCode=[node.code];
+                	viewId=[node.id];
+                	var param = {belongExtTypeId : node.id};
+                    $("#dg2").datagrid("load", param);
+                }
+            });
+            $('#dg2').datagrid({
+            	url:"/tag/tagExtModel/initField",
+                rownumbers:true,
+                title:'行业扩展模型数据类型属性',
+                border:false,
+                fit: true,
+                singleSelect:true,
+                pagination:true,
+                pageSize: 15,
+                pageList: [15,20,30],
+                beforePageText: '第',
+                afterPageText: '页    共 {pages} 页',  
+                displayMsg: '当前显示 {from} - {to} 条记录   共 {total} 条记录',
+                columns:[[
+					{field:'dataTypeElement.code',title:'属性要素编码',width:180,halign:'center'},
+                    {field:'dataTypeElement.name',title:'属性要素名称',width:120,halign:'center'},
+                    {field:'typeCode',title:'数据类型',width:140,align:'center'},
+                    {field:'typeLength',title:'长度',width:40,align:'center'},
+                    {field:'typePrecision',title:'精度',width:40,align:'center'},
+                    {field:'isArray',title:'是否列表',width:60,align:'center',formatter:isOrNo},
+                    {field:'isQuery',title:'是否查询',width:60,align:'center',formatter:isOrNo},
+                    {field:'memo',title:'备注',width:300,halign:'center'}
+                ]]
+            });
+            $('#dg3').datagrid({
+                rownumbers:true,
+                border:false,
+                fit: true,
+                singleSelect:true,
+                pagination:true,
+                pageSize: 10,
+                pageList: [10,15,20],
+                beforePageText: '第',
+                afterPageText: '页    共 {pages} 页',  
+                displayMsg: '当前显示 {from} - {to} 条记录   共 {total} 条记录',
+                columns:[[
+                    {field:'typeName',title:'表述类型',width:100,align:'center',sortable:true},
+                    {field:'express',title:'表述模版',width:530,halign:'center',sortable:true}
+                ]]
+            });
+            $('#tg4').treegrid({
+            	url:"/tag/tagExtModel/unSelectType?industryType="+industryValue,
+                border:'false',
+                fit:true,
+                treeField:'code',
+                idField:'id',
+                border:0,
+                singleSelect:false,
+                rownumbers:true,
+                pagination:true,
+                beforePageText: '第',
+                afterPageText: '页    共 {pages} 页',  
+                displayMsg: '当前显示 {from} - {to} 条记录   共 {total} 条记录',
+                columns:[[ 
+                    {field:'code',title:'编码',width:250,halign:'center',sortable:true},
+                    {field:'name',title:'名称',width:250,halign:'center',sortable:true},
+                    {field:'parentTypeCode',title:'父类',width:200,halign:'center',sortable:true},
+                    {field:'typeName',title:'类型',width:100,align:'center',sortable:true}
+                ]],
+                onClickRow:function(row){
+                	if(row.type==3){
+                		var selected = false;
+                		var selectedRow = $('#tg4').treegrid("getSelections");
+                		for(var i=0;i<selectedRow.length;i++){
+                			if(selectedRow[i].id == row.id){
+                				selected = true;
+                				break;
+                			}
+                		}
+                		var children = $('#tg4').treegrid("getChildren",row.id);
+                		for(var i=0;i<children.length;i++){
+                			if(selected){
+                    			$('#tg4').treegrid("select",children[i].id);
+                			}else{
+                				$('#tg4').treegrid("unselect",children[i].id);
+                			}
+                		}
+                	}
+                }
+            });
+        });
+        function doSearch(){
+        	var param = {typeCode : $('#typeCode').val()};
+            $("#dg1").datagrid("load", param);
+        }
+        function doSearchBase(){
+        	var param = {typeCode : $('#typeCodeBase').val()};
+            $("#tg4").treegrid("load", param);
+        }
+        function doViewExpress(){
+        	var rows = $('#dg2').datagrid('getSelected');
+        	if(rows==null)
+            {
+        		$.messager.alert('提示','请选择需要查看表述的行业扩展模型属性记录'); 
+              	return;
+            }
+        	var url = "/tag/tagExtModel/initExpress?fieldId="+rows.id;
+            $("#dg3").datagrid("load", url );
+        	$('#w3').window({top:50});
+        	$('#w3').window('open');
+        }
+        function doImport(){
+        	$("#tg4").treegrid("reload");
+        	$('#w4').window({top:20});
+        	$('#w4').window('open');
+        }
+        function doBack(){
+        	location.href="/tag/tagExtModel/toEdit";
+        }
+        function doSure(){
+        	var rows = $("#tg4").treegrid("getSelections");
+        	if(rows.length==0){
+        		$.messager.alert('提示','请选择需要引入的记录'); 
+              	return;
+        	}
+        	var typeIds = new Array(),fieldIds = new Array();
+        	var typeIdForField = "";//上一属性对应的类型ID，若与上一属性此值一致，说明所属类已加入typeIds中，否则反之
+        	for(var i=0;i<rows.length;i++){
+        		if(rows[i].type==1 || rows[i].type==2){//基础类型和扩展类型
+        			typeIds.push(rows[i].id);
+        		}else if(rows[i].type==-1){//属性
+        			fieldIds.push(rows[i].id);
+        			var haveBelongType=false,haveSelfType=false;
+        			for(var j=0;j<typeIds.length;j++){
+        				if(typeIds[j]==rows[i].belongTypeId){
+        					haveBelongType=true;
+        				}
+        				if(typeIds[j]==rows[i].selfTypeId){
+        					haveSelfType=true;
+        				}
+        			}
+        			if(!haveBelongType){
+        				typeIds.push(rows[i].belongTypeId);
+        			}
+        			if(!haveSelfType){
+        				typeIds.push(rows[i].selfTypeId);
+        			}
+        		}
+        	}
+        	if(typeIds.length==0){
+        		$.messager.alert('提示','请选择需要引入的记录'); 
+              	return;
+        	}
+        	$.messager.confirm('询问', '确定要引入这些数据信息吗？', function(rtn){
+				if (rtn){
+                    $.ajax({  
+                        type: "POST",
+                        url:"/tag/tagExtModel/saveImport",
+                        data: {
+                        	typeIds: typeIds.join(","),
+                        	fieldIds:fieldIds.join(","),
+                        	industryType:industryValue
+                        },
+                        success: function (data) {
+                            var json=eval('('+data+')');  
+                            if(json.success==1){
+                                $.messager.alert('提示','引入数据成功');
+                                doSearchBase();
+                                doSearch();
+                            }else{
+                                $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+        function doDetail(id,code){
+        	//看是否存在，如果存在就回到存在的位置，否则就增加
+        	var haved = false;
+        	for(var i=0;i<viewCode.length;i++){
+        		if(viewCode[i]==code){
+        			viewCode.length=i+1;
+        			viewId.length=i+1;
+        			haved = true;
+        			break;
+        		}
+        	}
+        	if(!haved){
+            	viewCode[viewCode.length]=code;
+            	viewId[viewId.length]=id;
+        	}
+        	var html = ""
+        	if(viewId.length==1){
+        		html="<font color=blue>"+viewCode[i]+"</font>"
+        	}else{
+            	for(var i=0;i<viewCode.length;i++){
+            		html = html + " -> <font color=blue><a href='#' onclick=\"doDetail('"+viewId[i]+"','"+viewCode[i]+"')\">"+viewCode[i]+"</a></font>";
+            	}
+            	if(html.length>0){
+            		html = html.substring(4);
+            	}
+        	}
+        	$("#dg2").datagrid('getPanel').panel('setTitle','行业扩展模型数据类型属性（'+html+'）');
+        	var param = {belongExtTypeId : id};
+        	console.log(param);
+            $("#dg2").datagrid("load", param);
+        }
+        function doClose(){
+        	$('#w4').window('close');
+        }
+        function doUnSelect(){
+        	$("#tg4").treegrid("unselectAll");
+        }
+        function doAllSelect(){
+        	$("#tg4").treegrid("selectAll");
+        }
+    </script>
+</body>

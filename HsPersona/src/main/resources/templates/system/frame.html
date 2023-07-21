@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+<head>
+    <meta charset="UTF-8">
+    <title>大数据用户画像项目</title>
+    <style>
+        .gap {
+            padding: 5px;
+        }
+    </style>
+</head>
+<body scroll=no>
+<div th:include="common/header.html"/>
+<link rel="stylesheet" type="text/css" href="/css/main.css"/>
+<div id="cc" class="easyui-layout main-div" style="height: 600px">
+    <div region="north" class="top-div" split="true">
+        <table cellpadding=0 cellspacing=0 border=0 height=100% width=100%>
+            <tr height=70>
+                <td width=50%><img src="/images/logo.gif"/></td>
+                <td width=50% align=right>
+                    欢迎您：[[${session.userSession.realName}]]<span class='gap'>|</span>
+                    <a href="#" onclick="doChangePassword()">修改密码</a><span class='gap'>|</span>
+                    <a href="/web/login/to"/>展现中心</a><span class='gap'>|</span>
+                    <a href="/system/login/quickStart" target=_blank>快速使用</a><span class='gap'>|</span>
+                    <a href="#" onclick="doIndex()">跳转首页</a><span class='gap'>|</span>
+                    <a href="#" onclick="doExit()">退出系统</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                </td>
+            </tr>
+            <tr>
+                <td colspan=2 class="top-menu">
+                    <table cellpadding=6 cellspacing=0 border=0>
+                        <tr>
+                            <td></td>
+                            <td th:each="menu:${menu1List}">
+                                <a href="javascript:void(0)"
+                                   th:onclick="showMenu([[${menu.id}]])"
+                                   th:text="${menu.name}">aaaaaaa</a></td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div region="south" class="bottom-div" split="true">
+        版权所有© ******科技有限公司 BEIJING ****.CN .ALL RIGHTS RESERVED 湘ICP备****号.
+    </div>
+    <div region="west" class="left-div" title="菜单导航" split="true" id="menuDiv">
+        <div class="easyui-accordion" fit="true" border="false" id="ea"></div>
+    </div>
+    <div region="center" split="true">
+        <div class="easyui-tabs" fit="true" id="tt" border=false>
+            <div title="主页">
+                <iframe width='100%' height='100%' id='iframe' frameborder='0' src=""></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="cpwin" class="easyui-window" closed="true" title="修改密码" style="width:350px;height:190px;" modal="true">
+    <form method="post" id="changeForm">
+        <br>
+        <table>
+            <tr>
+                <td class="info-td">原密码：</td>
+                <td><input type="password" id="oldPass" name="oldPass"/>&nbsp;<font color=red>*</font></td>
+            </tr>
+            <tr>
+                <td class="info-td">新密码：</td>
+                <td><input type="password" id="newPass" name="newPass"/>&nbsp;<font color=red>*</font></td>
+            </tr>
+            <tr>
+                <td class="info-td">重复密码：</td>
+                <td><input type="password" id="newPass1" name="newPass1"/>&nbsp;<font color=red>*</font></td>
+            </tr>
+        </table>
+        <br>
+        <a class="easyui-linkbutton" iconcls="icon-ok" href="javascript:void(0)" onclick="doSavePassword()">保存</a>
+        <a class="easyui-linkbutton" iconcls="icon-cancel" href="javascript:void(0)" onclick="doClosePassword()">关闭</a>
+    </form>
+    <input type="hidden" id="firstId" th:value="${menu1List[0].id}"/>
+</div>
+<script type="text/javascript" src="/script/md5.js"></script>
+<script type="text/javascript" th:inline="javascript">
+    /*
+    *添加选项卡方法
+    */
+    function addTab(id, title, url) {
+        var tab = $('#tt').tabs('exists', title + "<span style='display:none'>" + id + "</span>");
+        if (tab) {
+            $('#tt').tabs('select', title + "<span style='display:none'>" + id + "</span>");
+            document.getElementById("if" + id).src = url;
+        } else {
+            $('#tt').tabs('add', {
+                title: title + "<span style='display:none'>" + id + "</span>",
+                content: "<iframe width='100%' height='100%' id='if" + id + "' frameborder='0' src='" + url + "'></iframe>",
+                closable: true
+            });
+        }
+    }
+
+    /*
+    *菜单鼠标移入移出背景变化方法
+    */
+    function omo(obj, type) {
+        obj.style.background = (type == 0) ? "#EEE" : "#FFF";
+    }
+
+    /**
+     *显示菜单
+     */
+    function showMenu(ids) {
+        var m2List = [[${menu2List}]];
+        var m3List = [[${menu3List}]];
+        var select = true;
+        $.each(m2List, function (index, m2) {
+            if ($("#ea").accordion('getPanel', m2.name) != null) {
+                $("#ea").accordion('remove', m2.name);
+            }
+
+            var thisId = m2.parentId;
+            if (thisId == ids) {
+                var html = "<div style='padding-top:5px'>";
+                $.each(m3List, function (index, m3) {
+                    if (m3.parentId == m2.id) {
+                        var name = m3.name;
+                        var url = m3.url;
+                        var id = m3.id;
+                        html += "<div class='menu-div' " +
+                            "onmouseover='omo(this,0)' " +
+                            "onmouseout='omo(this,1)' " +
+                            "onclick=\"javascript:addTab('" + id + "','" + name + "','" + url + "');\">" +
+                            "<span class='icon-span'>　　</span>&nbsp;" + name +
+                            "</div>";
+                    }
+                })
+                html += "</div>";
+                $('#ea').accordion('add', {
+                    title: m2.name,
+                    iconCls: "icon-folder",
+                    selected: select,
+                    content: html
+                });
+                select = false;
+            }
+        });
+    }
+
+    function doExit() {
+        $.messager.confirm('询问', '您确定要退出系统？？', function (rtn) {
+            if (rtn) {
+                $.ajax({
+                    type: "POST",
+                    url: "/system/login/out",
+                    success: function (data) {
+                        var json = eval('(' + data + ')');
+                        if (json.success == 1) {
+                            location.href = "/system/login/to";
+                        } else {
+                            $.messager.alert('提示', '数据提交处理失败，原因：' + json.info);
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    function doChangePassword() {
+        $('#changeForm').form('clear');
+        $('#cpwin').window('open');
+    }
+
+    function doSavePassword() {
+        var oldPass = $('#oldPass').val();
+        var newPass = $('#newPass').val();
+        $('#changeForm').form('submit', {
+            url: '/system/user/changePassword',
+            onSubmit: function () {
+                if (oldPass == "") {
+                    $.messager.alert('提示', '原密码不能为空');
+                    return false;
+                }
+                if (newPass == "") {
+                    $.messager.alert('提示', '新密码不能为空');
+                    return false;
+                }
+                if (newPass.length < 4) {
+                    $.messager.alert('提示', '新密码长度不能小于4位');
+                    return false;
+                }
+                if (newPass != $('#newPass1').val()) {
+                    $.messager.alert('提示', '两次输入的密码不相等');
+                    return false;
+                }
+
+                if (newPass == oldPass) {
+                    $.messager.alert('提示', '新密码与旧密码不能相同');
+                    return false;
+                }
+                MD5_Typ = 'Typ32';
+                $("#oldPass").val((MD5(oldPass)));
+                $("#newPass").val((MD5(newPass)));
+            },
+            success: function (data) {
+                var json = eval('(' + data + ')');
+                if (json.success == 1) {
+                    $.messager.alert('提示', '修改密码成功');
+                    $('#cpwin').window('close');
+                } else {
+                    $("#oldPass").val((oldPass));
+                    $("#newPass").val((newPass));
+                    $.messager.alert('提示', '数据提交处理失败，原因：' + json.info);
+                }
+            }
+        });
+    }
+
+    function doClosePassword() {
+        $('#cpwin').window('close');
+    }
+
+    function doIndex() {
+        $.messager.confirm('询问', '您确定要跳转到Web首页吗？？', function (rtn) {
+            if (rtn) {
+                location.href = "/";
+            }
+        });
+    }
+
+    /*
+    *检测浏览器窗口大小改变,来改变页面layout大小
+    */
+    $(function () {
+        $(window).resize(function () {
+            $('#cc').layout('resize',{
+                height: $(window).height()
+            });
+        });
+    });
+
+</script>
+<script type="text/javascript">
+    $(window).load(function(){
+        $('#cc').layout('resize',{
+            height: $(window).height()
+        });
+        showMenu($("#firstId").val());
+    })
+</script>
+</body>
+</html>

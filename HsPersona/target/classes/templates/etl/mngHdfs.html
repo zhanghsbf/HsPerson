@@ -1,0 +1,241 @@
+﻿<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+<body>
+<div th:include="common/header.html"/>
+    <table id="dg" toolbar="#tb"></table>
+    <div id="tb">
+        <a href="#" onclick="doBackTop()" id="backTopBtn" class="easyui-linkbutton" iconCls="icon-back" plain="true" disabled>返回顶级</a>
+        <a href="#" onclick="doBack()" id="backBtn" class="easyui-linkbutton" iconCls="icon-back" plain="true" disabled>返回上一级</a>
+        <a href="#" onclick="queryHdfs()" class="easyui-linkbutton" iconCls="icon-reload" plain="true">刷新</a>
+        <sys:permission code="addHdfs">
+        <a href="#" onclick="doAdd()" class="easyui-linkbutton" iconCls="icon-add" plain="true">新建文件夹</a>
+        </sys:permission>
+        <sys:permission code="editHdfsName">
+        <a href="#" onclick="doEdit()" class="easyui-linkbutton" iconCls="icon-edit" plain="true">重命名</a>
+        </sys:permission>
+        <sys:permission code="deleteHdfs">
+        <a href="#" onclick="doDelete()" class="easyui-linkbutton" iconCls="icon-remove" plain="true">删除文件(夹)</a>
+        </sys:permission> 
+        <sys:permission code="uploadHdfs">
+        <a href="#" onclick="showUpload()" class="easyui-linkbutton" iconCls="icon-up" plain="true">上传文件</a>
+        </sys:permission>
+    </div>
+    <div id="f" class="easyui-window" style="padding-left:15px;width:450;height:130;" title="文件上传" modal="true">
+    	<br>
+    	<form method="post" enctype="multipart/form-data" id="uploadForm">
+    	<input type="hidden" id="fileName" name="fileName"/>
+    	<input type="hidden" id="filePath" name="filePath"/>
+    	<input type="file" id="upfile" name="upfile" style="padding:0px;width:400px;"/>
+    	</form>
+    	<br>
+        <a class="easyui-linkbutton" iconcls="icon-ok" href="javascript:void(0)" onclick="doUp()">提交</a> 
+        <a class="easyui-linkbutton" iconcls="icon-cancel" href="javascript:void(0)" onclick="doClose()">关闭</a> 
+    </div>
+    <script type="text/javascript">
+        var dataRootPath = '[[ ${dataRootPath}]]'
+    </script>
+    <script type="text/javascript" th:inline="none">
+    	var path = "";
+        $(function () { 
+            $('#w').window('close'); 
+            $('#f').window('close'); 
+            $('#dg').datagrid({
+                url:"/etl/etlExtractRdb/queryHdfs",
+                rownumbers:true,
+                title:'HDFS文件列表（'+dataRootPath+'）',
+                border:false,
+                fit: true,
+                singleSelect:true,
+                columns:[[
+                    {field:'type',title:'类型',width:40,align:'center',formatter:file},
+                    {field:'name',title:'文件名',width:300,halign:'center',sortable:true},
+                    {field:'childrenNum',title:'子成员个数',width:80,align:'center',sortable:true},
+                    {field:'length',title:'文件大小（B）',width:100,halign:'center',align:'right',sortable:true,formatter:fileSize},
+                    {field:'modificationTime',title:'修改时间',width:150,align:'center',formatter:times}
+                ]],
+                onDblClickRow:function(index,node){
+                	if(node.type=="DIRECTORY"){
+                    	path = path + "/" + node.name;
+                    	
+                    	queryHdfs();
+                	}
+                },
+                onLoadSuccess: function(data){
+					console.log(data);
+					if(path==""){
+						path = data.dataRootPath;
+					}
+					$("#dg").datagrid('getPanel').panel('setTitle','HDFS文件列表（'+path+'）');
+				}
+            });
+        });
+        function file(v){
+        	if(v=="DIRECTORY"){
+        		return "<span class='tree-folder'></span>";
+        	}else{
+        		return "<span class='tree-file'></span>";
+        	}
+        }
+        function fileSize(v){
+			var a = (v+"").split(""),s="";
+        	for(var i=0;i<a.length;i++){
+				s=s + a[i];
+				if((i+1-a.length%3)%3==0 && i!=a.length-1){
+					s=s + ",";
+				}
+			}
+        	return s;
+        }
+        function queryHdfs(){
+        	if(path=="" || path == dataRootPath){
+        		$("#dg").datagrid('getPanel').panel('setTitle','HDFS文件列表（'+dataRootPath+'）');
+        		$('#backBtn').linkbutton('disable');
+        		$('#backTopBtn').linkbutton('disable');
+        	}else{
+			$("#dg").datagrid('getPanel').panel('setTitle','HDFS文件列表（'+path+'）');
+        		$('#backBtn').linkbutton('enable');
+        		$('#backTopBtn').linkbutton('enable');
+        	}
+			var param = {path: path};
+ 		    $("#dg").datagrid("load", param);
+        }
+        function doBack(){
+        	if(path!=""){
+        		path = path.substring(0,path.lastIndexOf("/"));
+        		queryHdfs();
+        	}
+        }
+        function doBackTop(){
+        	if(path!=""){
+        		path = "";
+        		queryHdfs();
+        	}
+        }
+        function doAdd()
+        {
+        	$.messager.prompt('提示','请输入文件夹名',function(text){
+        		if (text){
+        			$.messager.progress({
+        				title:'新增文件夹',
+        				msg:'正在新增......'
+       				});
+        			$.ajax({  
+                        type: "POST",
+                        url:"/etl/etlExtractRdb/addHdfs",
+                        data: {path:path,name:text},
+                        success: function (data) {
+                            var json=eval('('+data+')');  
+                            $.messager.progress('close');
+                            if(json.success==1){
+                                $('#dg').datagrid('reload');
+                            }else{
+                                $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                            }
+                        }
+                    });
+        		}
+        	});
+        }
+        function doDelete()
+        {
+            var rows = $('#dg').datagrid('getSelected');
+            if(rows==null){
+                $.messager.alert('提示','请选择需要删除的文件或文件夹'); 
+                return;
+            }
+            $.messager.confirm('询问', '确定要删除该文件或文件夹？', function(rtn){
+                if (rtn){
+                	$.messager.progress({
+        				title:'删除文件(夹)',
+        				msg:'正在删除......'
+       				});
+                    $.ajax({  
+                        type: "POST",
+                        url:"/etl/etlExtractRdb/deleteHdfs",
+                        data: {path:path,name:rows.name},
+                        success: function (data) {
+                            var json=eval('('+data+')'); 
+                            $.messager.progress('close');
+                            if(json.success==1){
+                                $('#dg').datagrid('reload');
+                            }else{
+                                $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+        function doEdit()
+        {
+        	var rows = $('#dg').datagrid('getSelected');
+            if(rows==null){
+                $.messager.alert('提示','请选择需要重命名的文件或文件夹'); 
+                return;
+            }
+            $.messager.prompt('提示','请输入新文件(夹)名',function(text){
+        		if (text){
+                	$.messager.progress({
+        				title:'重命名文件(夹)',
+        				msg:'正在重命名......'
+       				});
+        			$.ajax({  
+                        type: "POST",
+                        url:"/etl/etlExtractRdb/editHdfs",
+                        data: {path:path,oldName:rows.name,newName:text},
+                        success: function (data) {
+                            var json=eval('('+data+')');
+                            $.messager.progress('close');
+                            if(json.success==1){
+                                $('#dg').datagrid('reload');
+                            }else{
+                                $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                            }
+                        }
+                    });
+        		}
+        	});
+        }
+        function showUpload(){
+        	$('#upfile').val("");
+        	$('#f').window('open');
+        }
+        function doClose(){
+        	$('#f').window('close');
+        }
+        function doUp(){
+        	var fileName = $('#upfile').val();
+        	if(fileName == ""){
+        		$.messager.alert('提示','上传文件不能为空');
+                return;
+        	}
+        	var fileExt = fileName.substring(fileName.lastIndexOf(".")+1).toLowerCase();
+        	//if(fileExt!="txt" && fileExt!="csv"){
+        	//	$.messager.alert('提示','上传文件必须为pdf格式文件');
+            //    return;
+        	//}
+        	fileName = fileName.substring(fileName.lastIndexOf("\\")+1);
+        	var rows = $("#dg").datagrid("getRows");
+        	for(var i=0;i<rows.length;i++){
+        		if($.trim(rows[i].name)==$.trim(fileName)){
+        			$.messager.alert('提示','该文件名已经存在');
+        			return;
+        		}
+        	}
+        	$('#fileName').val(fileName)
+        	$('#filePath').val(path);
+        	$('#uploadForm').form('submit',{
+                url:"/etl/etlExtractRdb/upload",
+                success:function(data){
+                    var json=eval('('+data+')');
+                    if(json.success==1){
+                    	queryHdfs();
+                        $('#f').window('close');
+                    }else{
+                        $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                    }
+                }   
+            });
+        }
+    </script>
+</body>

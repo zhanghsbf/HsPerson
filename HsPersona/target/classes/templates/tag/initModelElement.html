@@ -1,0 +1,203 @@
+﻿<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+<body>
+<div th:include="common/header.html"/>
+    <table id="dg" toolbar="#tb"></table>
+    <div id="tb">
+        &nbsp;要素编码：<input type="text" id="codeParam" />
+        &nbsp;要素名称：<input type="text" id="nameParam" />
+        <a href="#" onclick="doSearch()" class="easyui-linkbutton" iconCls="icon-search" plain="true">查询</a>
+        <sys:permission code="editBaseModelProperty">
+        <a href="#" onclick="doAdd()" class="easyui-linkbutton" iconCls="icon-add" plain="true">添加</a>  
+        <a href="#" onclick="doEdit()" class="easyui-linkbutton" iconCls="icon-edit" plain="true">修改</a>
+        <a href="#" onclick="doDelete()" class="easyui-linkbutton" iconCls="icon-remove" plain="true">删除</a> 
+        <a href="#" onclick="doBan()" class="easyui-linkbutton" iconCls="icon-ban" plain="true">启禁</a>
+        </sys:permission>
+    </div>
+    <div id="w" class="easyui-window" style="padding-left:15px;width:350;height:200;" title="维护参数" modal="true">
+            <form method="post" id="actionForm"> 
+            	<br>
+                <input type="hidden" name="id" />
+                <input type="hidden" name="enable" />
+                <table> 
+                    <tr> 
+                    <td class="info-td">要素名称：</td> 
+                    <td><input type="text" id="value" name="name"/>&nbsp;<font color=red>*</font></td> 
+                    </tr>
+                    <tr>
+                    <td class="info-td">要素编码：</td>
+                    <td><input type="text" id="code" name="code"/>&nbsp;<font color=red>*</font></td>
+                    </tr>
+                    <tr> 
+                    <td class="info-td">要素说明：</td> 
+                    <td><input type="text" id="memo" name="memo"/></td> 
+                    </tr>
+                </table>
+                <br>
+                <a class="easyui-linkbutton" iconcls="icon-ok" href="javascript:void(0)" onclick="doSave()">保存</a> 
+                <a class="easyui-linkbutton" iconcls="icon-cancel" href="javascript:void(0)" onclick="doClose()">关闭</a> 
+            </form>
+            <br>
+    </div>
+    <script type="text/javascript" th:inline="none">
+        $(function () { 
+            $('#w').window('close'); 
+            $('#dg').datagrid({
+                url:"/tag/tagElement/init",
+                rownumbers:true,
+                title:'模型要素列表',
+                border:false,
+                fit: true,
+                singleSelect:true,
+                pagination:true,
+                pageSize: 15,
+                pageList: [15,20,30],
+                beforePageText: '第',
+                afterPageText: '页    共 {pages} 页',  
+                displayMsg: '当前显示 {from} - {to} 条记录   共 {total} 条记录',
+                columns:[[
+                    {field:'name',title:'要素名称',width:150,halign:'center',sortable:true},
+                    {field:'code',title:'要素编码',width:150,halign:'center',sortable:true},
+                    {field:'enable',title:'是否可用',width:80,align:'center',sortable:true,formatter:isOrNo},
+                    {field:'memo',title:'要素说明',width:400,halign:'center',sortable:true}
+                ]]
+            });
+        });
+        function doAdd()
+        {
+            $('#actionForm').form('clear');
+            $('#w').window('open'); 
+        }
+        function doDelete()
+        {
+            var rows = $('#dg').datagrid('getSelected');
+            if(rows==null)
+            {
+                $.messager.alert('提示','请选择需要删除的数据'); 
+                return;
+            }
+            $.messager.confirm('询问', '确定要删除该数据信息？', function(rtn){
+				if (rtn){
+                    $.ajax({  
+                        type: "POST",
+                        url:"/tag/tagElement/delete",
+                        data: { id: rows.id},
+                        success: function (data) {
+                            var json=eval('('+data+')');  
+                            if(json.success==1)
+                            {
+                                $.messager.alert('提示','删除数据成功');
+                                $('#dg').datagrid('reload');
+                            }
+                            else
+                            {
+                                $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+        function doEdit()
+        {
+            var rows = $('#dg').datagrid('getSelected');
+            if(rows==null)
+            {
+                $.messager.alert('提示','请选择需要修改的数据'); 
+                return;
+            }
+            $.ajaxSetup({cache: false});
+            $('#actionForm').form('load',"/tag/tagElement/edit?id="+rows.id);
+            $('#w').window('open'); 
+        }
+        function doSave()
+        {
+            $('#actionForm').form('submit',{
+                url:"/tag/tagElement/save",
+                onSubmit: function(){
+                	if($('#value').val()=="")
+                    {
+                        $.messager.alert('提示','要素名称不能为空');
+                        return false;
+                    }
+                	if($('#value').val().length>100){
+                    	$.messager.alert('提示','要素名称不能超过100个字符');
+                        return false;
+                    }
+                	if($('#code').val()=="")
+                    {
+                        $.messager.alert('提示','要素编码不能为空');
+                        return false;
+                    }
+                    if(!isCode($('#code').val())){
+                    	$.messager.alert('提示','要素编码必须为英文字母开头，可包含数字，字母，下划线');
+                        return false;
+                    }
+                    if($('#code').val().length>50){
+                    	$.messager.alert('提示','要素编码不能超过50个字符');
+                        return false;
+                    }
+                    if($('#memo').val().length>3000){
+                    	$.messager.alert('提示','要素说明不能超过3000个字符');
+                        return false;
+                    }
+                },
+                success:function(data){
+                    var json=eval('('+data+')');  
+                    if(json.success==1)
+                    {
+                        $('#w').window('close');
+                        $.messager.alert('提示','保存数据成功');
+                        $("#dg").datagrid("reload");
+                    }
+                    else
+                    {
+                        $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                    }
+                }   
+            });
+        }
+        function doSearch()
+        {
+            var param = {
+            	code: $("#codeParam").val(),
+            	name: $("#nameParam").val()
+            };
+            $("#dg").datagrid("load", param);
+        }
+        function doClose()
+        {
+            $('#w').window('close');
+        }
+        function doBan()
+        {
+            var rows = $('#dg').datagrid('getSelected');
+            if(rows==null)
+            {
+                $.messager.alert('提示','请选择需要修改启禁状态的要素'); 
+                return;
+            }
+            $.messager.confirm('询问', '确定要修改该要素的启禁状态？', function(rtn){
+                if (rtn){
+             	   $.ajax({  
+                        type: "POST",
+                        url:"/tag/tagElement/ban",
+                        data: { id: rows.id},
+                        success: function (data) {
+                            var json=eval('('+data+')');  
+                            if(json.success==1)
+                            {
+                                $.messager.alert('提示','修改要素的启禁状态成功');
+                                $('#dg').datagrid('reload');
+                            }
+                            else
+                            {
+                                $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+</body>

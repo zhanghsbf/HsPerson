@@ -1,0 +1,9 @@
+body{margin:0px;padding:0px;text-align:center;width:100%}
+.top_div{height:100px}
+.left_div{height:100px;}
+.main_div{width:100%;background:#037BAF;height:500px;}
+.login_div{padding-left:515px;padding-top:10px;}
+.center_div{width:1024;;height:500px;margin:0px auto;background-image:url(../images/weblogin.jpg);}
+.btnClass{width:80px;height:35px;cursor:pointer;padding-top:3px;font-size:14px;font-family:'Microsoft YaHei';}
+.labelClass{font-size:14px;font-family:'Microsoft YaHei';}
+.txtClass{width:180px; height:30px;}

@@ -1,0 +1,86 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+<body>
+<div th:include="common/header.html"/>
+    <table id="dg" toolbar="#tb"></table>
+    <div id="tb">
+    	<sys:permission code="editExtModelMng">
+        <a href="#" onclick="doInit()" class="easyui-linkbutton" iconCls="icon-expand" plain="true">初始化模型</a>
+        <a href="#" onclick="doEdit()" class="easyui-linkbutton" iconCls="icon-edit" plain="true">维护模型</a>
+        <a href="#" onclick="doClear()" class="easyui-linkbutton" iconCls="icon-remove" plain="true">清空模型</a>
+        </sys:permission>
+        <a href="#" onclick="doView()" class="easyui-linkbutton" iconCls="icon-view" plain="true">查看模型</a>
+    </div>
+    <script type="text/javascript" th:inline="none">
+        $(function () { 
+            $('#dg').datagrid({
+                url:"/tag/tagExtModel/initList",
+                rownumbers:true,
+                title:'行业模型列表',
+                border:false,
+                fit: true,
+                singleSelect:true,
+                columns:[[
+                    {field:'itemValue',title:'行业编号',width:100,align:'center',sortable:true},
+                    {field:'itemName',title:'行业名称',width:300,align:'center',sortable:true},
+                    {field:'num',title:'对象类个数',width:100,align:'center'}
+                ]],
+                onDblClickRow:function(index,node){
+                	location.href="/tag/tagExtModel/toDetail?type=0&id="+node.itemValue;
+                }
+            });
+        });
+        function doClear()
+        {
+        	var rows = $('#dg').datagrid('getSelected');
+            if(rows==null){
+                $.messager.alert('提示','请选择需要清空的行业模型'); 
+                return;
+            }
+            $.messager.confirm('询问', '清空行业模型，将删除该模型下的所有数据，确定要清空吗？', function(rtn){
+                if (rtn){
+                    $.ajax({  
+                        type: "POST",
+                        url:"/tag/tagExtModel/clear",
+                        data: {industryValue : rows.itemValue},
+                        success: function (data) {
+                            var json=eval('('+data+')');  
+                            if(json.success==1){
+                                $.messager.alert('提示','删除数据成功');
+                                $('#dg').datagrid('reload');
+                            }else{
+                                $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+        function doEdit()
+        {
+            var rows = $('#dg').datagrid('getSelected');
+            if(rows==null){
+                $.messager.alert('提示','请选择需要修改的行业模型'); 
+                return;
+            }
+            location.href="/tag/tagExtModel/toDetail?type=1&id="+rows.itemValue;
+        }
+        function doView()
+        {
+            var rows = $('#dg').datagrid('getSelected');
+            if(rows==null){
+                $.messager.alert('提示','请选择需要查看的行业模型'); 
+                return;
+            }
+        	location.href="/tag/tagExtModel/toDetail?type=0&id="+rows.itemValue;
+        }
+        function doInit(){
+        	var rows = $('#dg').datagrid('getSelected');
+            if(rows==null){
+                $.messager.alert('提示','请选择需要初始化的行业模型'); 
+                return;
+            }
+        	location.href="/tag/tagExtModel/toDetail?type=2&id="+rows.itemValue;
+        }
+	</script>
+</body>

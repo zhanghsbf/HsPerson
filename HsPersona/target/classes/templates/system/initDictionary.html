@@ -1,0 +1,170 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+<body>
+<div th:include="common/header.html"/>
+    <table id="dg" toolbar="#tb"></table>
+    <div id="tb">
+        &nbsp;项类型：<input type="text" id="typename" />
+        <a href="#" onclick="doSearch()" class="easyui-linkbutton" iconCls="icon-search" plain="true">查询</a>
+        <sys:permission code="editDictionary">
+        <a href="#" onclick="doAdd()" class="easyui-linkbutton" iconCls="icon-add" plain="true">添加</a>  
+        <a href="#" onclick="doEdit()" class="easyui-linkbutton" iconCls="icon-edit" plain="true">修改</a>
+        <a href="#" onclick="doDelete()" class="easyui-linkbutton" iconCls="icon-remove" plain="true">删除</a> 
+        </sys:permission>
+    </div>
+    <div id="w" class="easyui-window" style="padding-left:15px;width:350;height:280;" title="维护字典" modal="true">
+            <form method="post" id="actionForm"> 
+                <input type="hidden" name="id" />
+                <table> 
+                    <tr>
+                    <td class="info-td">项类型：</td>
+                    <td><input type="text" id="type" name="type"/>&nbsp;<font color=red>*</font></td>
+                    </tr>
+                    <tr> 
+                    <td class="info-td">项关键值：</td> 
+                    <td><input type="text" id="itemValue" name="itemValue"/>&nbsp;<font color=red>*</font></td> 
+                    </tr>
+                    <tr> 
+                    <td class="info-td">项显示名称：</td> 
+                    <td><input type="text" id="itemName" name="itemName"/>&nbsp;<font color=red>*</font></td> 
+                    </tr>
+                    <tr>
+                    <td class="info-td">内部排序号：</td>
+                    <td><input type="text" id="orders" name="orders"/>&nbsp;<font color=red>*</font></td>
+                    </tr>
+                    <tr>
+                    <td class="info-td">描述：</td>
+                    <td><textarea id="memo" name="memo" style="height:50;"/></textarea></td>
+                    </tr>
+                </table>
+                <br>
+                <a class="easyui-linkbutton" iconcls="icon-ok" href="javascript:void(0)" onclick="doSave()">保存</a> 
+                <a class="easyui-linkbutton" iconcls="icon-cancel" href="javascript:void(0)" onclick="doClose()">关闭</a> 
+            </form>
+            <br>
+    </div>
+    <script type="text/javascript" th:inline="none">
+        $(function () { 
+            $('#w').window('close'); 
+            $('#dg').datagrid({
+                url:"/system/dictionary/init",
+                rownumbers:true,
+                title:'系统字典数据列表',
+                border:false,
+                fit: true,
+                singleSelect:true,
+                pagination:true,
+                pageSize: 15,
+                pageList: [15,20,30],
+                beforePageText: '第',
+                afterPageText: '页    共 {pages} 页',  
+                displayMsg: '当前显示 {from} - {to} 条记录   共 {total} 条记录',
+                columns:[[
+                    {field:'type',title:'项类型',width:160,align:'center',sortable:true},
+                    {field:'itemValue',title:'项关键值',width:140,align:'center',sortable:true},
+                    {field:'itemName',title:'项显示名称',width:200,align:'center',sortable:true},
+                    {field:'orders',title:'内部排序号',width:140,align:'center',sortable:true},
+                    {field:'memo',title:'描述',width:300,sortable:true}
+                ]]
+            });
+        });
+        function doAdd()
+        {
+            $('#actionForm').form('clear');
+            $('#w').window('open'); 
+        }
+        function doDelete()
+        {
+            var rows = $('#dg').datagrid('getSelected');
+            if(rows==null){
+                $.messager.alert('提示','请选择需要删除的数据'); 
+                return;
+            }
+            $.messager.confirm('询问', '确定要删除该数据信息？', function(rtn){
+                if (rtn){
+                    $.ajax({  
+                        type: "POST",
+                        url:"/system/dictionary/delete",
+                        data: {dictionaryId: rows.id},
+                        success: function (data) {
+                            var json=eval('('+data+')');  
+                            if(json.success==1){
+                                $.messager.alert('提示','删除数据成功');
+                                $('#dg').datagrid('reload');
+                            }else{
+                                $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+        function doEdit()
+        {
+            var rows = $('#dg').datagrid('getSelected');
+            if(rows==null){
+                $.messager.alert('提示','请选择需要修改的数据'); 
+                return;
+            }
+            $.ajaxSetup({cache: false});
+            $('#actionForm').form('load',"/system/dictionary/edit?id="+rows.id);
+            $('#w').window('open'); 
+        }
+        function doSave()
+        {
+            $('#actionForm').form('submit',{
+                url:"/system/dictionary/save",
+                onSubmit: function(){
+                	if($('#type').val()==""){
+                        $.messager.alert('提示','项类型不能为空');
+                        return false;
+                    }
+                    //if($('input[name=itemValue]').val()=="")
+                    if($('#itemValue').val()==""){
+                        $.messager.alert('提示','项关键值不能为空');
+                        return false;
+                    }
+                    if($('#itemName').val()==""){
+                        $.messager.alert('提示','项显示名称不能为空');
+                        return false;
+                    }
+                    if($('#orders').val()==""){
+                        $.messager.alert('提示','内部排序号不能为空');
+                        return false;
+                    }
+                    if(isNaN($('#orders').val())){
+                        $.messager.alert('提示','内部排序号只能为正整数');
+                        return false;
+                    }
+                    if(parseInt($("#orders").val()) < 0){
+                        $.messager.alert('提示','内部排序号只能为正整数');
+                        return false;
+                    }
+                    if($("#orders").val().indexOf(".") > 0){
+                        $.messager.alert('提示','内部排序号只能为正整数');
+                        return false;
+                    }
+                },
+                success:function(data){
+                    var json=eval('('+data+')');  
+                    if(json.success==1){
+                        $('#w').window('close');
+                        $.messager.alert('提示','保存数据成功');
+                        $('#dg').datagrid('load');
+                    }else{
+                        $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                    }
+                }   
+            });
+        }
+        function doSearch()
+        {
+            var param = {type: $("#typename").val()};
+            $("#dg").datagrid("load", param);
+        }
+        function doClose()
+        {
+            $('#w').window('close');
+        }
+    </script>
+</body>

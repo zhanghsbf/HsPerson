@@ -1,0 +1,287 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+<head>
+    <div th:include="common/header.html"/>
+<style>
+.left-div{width:300px;border-left:0px;border-top:0px;border-bottom:0px;}
+.layout-panel-west .panel-header{border-left:0px;border-top:0px;}
+.right-div{height:150px;border:0px;}
+.datagrid-cell-c1-sql{white-space:normal;word-break: break-all}
+.datagrid-cell-c2-data{white-space:normal;word-break: break-all}
+.datagrid-cell-c3-data{white-space:normal;word-break: break-all}
+</style>
+    <script type="text/javascript" th:inline="none" src="/script/rule.js" ></script>
+</head>
+<body>
+    <div class="easyui-layout main-div">
+        <div region="west" class="left-div" title="标签体系树">
+            <ul id="tt"></ul>
+        </div>
+        <div region="center" class="right-div">
+			<table id="dg"></table>
+        </div>
+    </div>
+
+    <div th:include="tag/addRuleCommon.html"/>
+
+    <script type="text/javascript" th:inline="none">
+    $(function () { 
+	    $('#w1').window('close'); 
+	    $('#w2').window('close'); 
+	    $('#tt').tree({
+	        url:"/tag/tagNet/netTree?type=0",
+	        width:240,
+	        lines:true,
+	        onClick:function (node) {
+	        	if(node.tmp=="3" || node.tmp=="4"){
+	        		if(node.tmp=="3"){
+		        		$('#filterBtn').linkbutton("enable");
+		        		$('#ruleBtn').linkbutton("disable");
+		        		$('#delBtn').show();
+		        		$('#allDelBtn').show();
+		        		$('#delsBtn').hide();
+	        		}else{
+		        		$('#filterBtn').linkbutton("disable");
+	        			$('#ruleBtn').linkbutton("enable");
+		        		$('#delBtn').hide();
+		        		$('#allDelBtn').hide();
+		        		$('#delsBtn').show();
+	        		}
+	        		var param = {tagId : node.id};
+                	$("#dg").datagrid("load", param);
+                	$.ajax({
+                        type: "POST",
+                        url:"/tag/tagParam/inList",
+                        data: {tagId: node.id},
+                        success: function (data) {
+                        	propertyData = eval(data);
+                        	$('#menuPpt').menu('removeItems');
+                        	for(var i=0;i<propertyData.length;i++){
+                       			$('#menuPpt').menu('appendItem',{
+                       				iconCls:'icon-code',
+                       				text:propertyData[i],
+                       				onclick:function(){
+                       					doAddProperty(this);
+                       				}
+                       			})
+                        	}
+                        	$('#menuPpt').menu('appendItem',{
+                   				iconCls:'icon-code',
+                   				text:"{nowtime}",
+                   				onclick:function(){
+                   					doAddVariable(this);
+                   				}
+                   			})
+                   			$('#menuPpt').menu('appendItem',{
+                   				iconCls:'icon-code',
+                   				text:"{nowdate}",
+                   				onclick:function(){
+                   					doAddVariable(this);
+                   				}
+                   			})
+                        }
+                    });
+	        	}else{
+	        		$('#filterBtn').linkbutton("disable");
+	        		$('#ruleBtn').linkbutton("disable");
+	        		$('#delBtn').hide();
+	        		$('#allDelBtn').hide();
+	        		$('#delsBtn').hide();
+                	$("#dg").datagrid("loadData", []);
+	        	}
+            }
+	    });
+	    $('#dg').datagrid({
+	    	url:"/tag/tagRule/load",
+	        title:'规则列表',
+	        border:false,
+	        fit: true,
+	        singleSelect:true,
+	        toolbar:[
+                 {iconCls:'icon-add',text:'添加过滤规则',handler : doAddRule,id:'filterBtn',disabled:true},
+                 {iconCls:'icon-add',text:'添加标签规则',handler : doAddRule,id:'ruleBtn',disabled:true},
+                 {iconCls:'icon-remove',text:'删除',handler : doDeleteRule,id:'delBtn'},
+                 {iconCls:'icon-remove',text:'删除',handler : doAllDeleteRule,id:'delsBtn'},
+                 {iconCls:'icon-remove',text:'全部删除',handler : doAllDeleteRule,id:'allDelBtn'}
+            ],
+	        columns:[[
+	            {field:'result',title:'返回值',width:50,align:'center'},
+	            {field:'tag',title:'标签',width:120,align:'center'},
+	            {field:'sql',title:'规则',halign:'center',width:650}
+	        ]]
+	    });
+	    $('#dg1').datagrid({
+	        rownumbers:true,
+	        border:false,
+	        fit: true,
+	        toolbar:[
+	            {iconCls:'icon-add',text:'添加行',handler : doAddFormulaRow},
+	            {iconCls:'icon-remove',text:'删除行',handler : doDeleteFormulaRow},
+	            {iconCls:'icon-next',text:'下一步',handler : doNext1}
+	        ],
+	        columns:[[
+	            {field:'data',title:'内容',width:820,halign:'center'},
+	            {field:'type',title:'类型',width:40,align:'center'}
+	        ]],
+	        onRowContextMenu:function(e,index,data){
+	        	//只有在表格内点右键才有反应
+	        	if(index>=0){
+	        		var rows = $("#dg1").datagrid("getSelections");
+	        		if(rows.length!=2){
+	        			//如果不是选了2个，则自动选择右键所在行
+	        			$(this).datagrid("clearSelections");
+	                    $(this).datagrid("selectRow", index);
+	                    var row = $("#dg1").datagrid("getSelected");
+    	            	e.preventDefault();
+	                    if(row.type==0){//0表示刚开始，可以显示属性和变量
+	    	               	$('#menuPpt').menu('show', {left: e.pageX,top: e.pageY});
+	                    }else if(row.type==1 || row.type==2 || row.type==4){//1表示已经有了属性、变量、表达式，单行可以组操作
+	                    	$('#menuFunc').menu('show', {left: e.pageX,top: e.pageY});
+	                    }
+	        		}else{
+	        			e.preventDefault();
+	        			//如果是选了两行，可以四则与sumif
+		               	$("#menuOpt").menu('show', {left: e.pageX,top: e.pageY});
+	        		}
+	        	}
+	        }
+	    });
+	    $('#dg2').datagrid({
+	        rownumbers:true,
+	        border:false,
+	        fit: true,
+	        toolbar:[
+	            {iconCls:'icon-add',text:'添加行',handler : doAddExpressRow},
+	            {iconCls:'icon-remove',text:'删除行',handler : doDeleteExpressRow},
+	            {iconCls:'icon-previous',text:'上一步',handler : doPrevious2},
+	            {iconCls:'icon-save',text:'保存',handler : doSave}
+	        ],
+	        columns:[[
+	            {field:'data',title:'内容',width:860,halign:'center'},
+	        ]],
+	        onRowContextMenu:function(e,index,data){
+	        	//只有在表格内点右键才有反应
+	        	if(index>=0){
+	        		var rows = $("#dg2").datagrid("getSelections");
+	        		if(rows.length!=2){
+	        			$(this).datagrid("clearSelections");
+	                    $(this).datagrid("selectRow", index);
+	                    var row = $("#dg2").datagrid("getSelected");
+	                    //不管是类型1还是类型2都可以弹右键
+                        e.preventDefault();
+    	               	$("#menuExpress").menu('show', {left: e.pageX,top: e.pageY});
+	        		}else{
+	        			//如果是选了两行，直接弹操作菜单
+	        			e.preventDefault();
+		               	$("#menuLogic").menu('show', {left: e.pageX,top: e.pageY});
+	        		}
+	        	}
+	        }
+	    });
+		$('#delBtn').hide();
+		$('#delsBtn').hide();
+		$('#allDelBtn').hide();
+    });
+    function doAddRule(){
+   		$('#dg2').datagrid('loadData',[]);
+   		$('#w1').window({top:10});
+   		$('#w1').window('open');
+    }
+    function doDeleteRule(){
+    	var row = $('#dg').datagrid('getSelected');
+        if(row==null){
+            $.messager.alert('提示','请选择需要删除的数据'); 
+            return;
+        }
+    	var node = $('#tt').tree('getSelected');
+    	if(node==null){
+    		 $.messager.alert('提示','未选择标签树中的节点'); 
+             return;
+    	}
+        $.messager.confirm('询问', '确定要删除该数据信息？', function(rtn){
+            if (rtn){
+                $.ajax({  
+                    type: "POST",
+                    url:"/tag/tagRule/delete",
+                    data: {index: row.index,tagId:node.id},
+                    success: function (data) {
+                        var json=eval('('+data+')');  
+                        if(json.success==1){
+                            $.messager.alert('提示','删除数据成功');
+                            $('#dg').datagrid('reload');
+                        }else{
+                            $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                        }
+                    }
+                });
+            }
+        });
+    }
+    function doAllDeleteRule(){
+    	var node = $('#tt').tree('getSelected');
+    	if(node==null){
+    		 $.messager.alert('提示','未选择标签树中的节点'); 
+             return;
+    	}
+        $.messager.confirm('询问', '确定要删除该数据信息？', function(rtn){
+            if (rtn){
+                $.ajax({  
+                    type: "POST",
+                    url:"/tag/tagRule/deleteAll",
+                    data: {tagId:node.id},
+                    success: function (data) {
+                        var json=eval('('+data+')');  
+                        if(json.success==1){
+                            $.messager.alert('提示','删除数据成功');
+                            $('#dg').datagrid('reload');
+                        }else{
+                            $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                        }
+                    }
+                });
+            }
+        });
+    }
+    function doSave(){
+    	var rows = $('#dg2').datagrid('getRows');
+        if(rows.length!=1){
+            $.messager.alert('提示','规则保存时，表格中需有一条且只有一条记录'); 
+            return;
+        }
+        if(rows[0].data==''){
+        	$.messager.alert('提示','不能保存空记录的规则'); 
+            return;
+        }
+        if(rows[0].type==0 && (rows[0].leftData=='' || rows[0].operate=='' || rows[0].rightData=='')){
+        	$.messager.alert('提示','表达式数据不完整，不能保存'); 
+            return;
+        }
+    	var node = $('#tt').tree('getSelected');
+    	if(node==null){
+    		 $.messager.alert('提示','未选择标签树中的节点'); 
+             return;
+    	}
+		$.ajax({  
+             type: "POST",
+             url:"/tag/tagRule/add",
+             data: {
+             	type:1,//1表示是区段规则
+             	sql:rows[0].data,
+             	tagId:node.id
+             },
+             success: function (data) {
+                 var json=eval('('+data+')');  
+                 if(json.success==1){
+                     $.messager.alert('提示','保存数据成功');
+                     $('#w2').window('close'); 
+                     $('#dg').datagrid('reload');
+                 }else{
+                     $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                 }
+             }
+         });
+    }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,111 @@
+<link rel="stylesheet" type="text/css" href="/css/css.css" />
+<link rel="stylesheet" type="text/css" href="/css/icon.css" />
+<div class="top_bar">
+    <div class="top_center">
+        <div class="top_left">金融行业大数据分析展示中心</div>
+        <div class="top_right">
+            <a href="javascript:void(0)">登陆用户：[[ ${session.accountSession.realName}]]</a>
+            &nbsp;|&nbsp;
+            <a href="/system/login/to">管理控制台</a>
+            &nbsp;|&nbsp;
+            <a href="#" onclick="doChangePassword()">修改密码</a>
+            &nbsp;|&nbsp;
+            <a href="/web/login/out">重新登陆</a>
+            &nbsp;|&nbsp;
+            <a href="/web/search/search">搜索首页</a>
+            &nbsp;|&nbsp;
+            <a href="/">WEB首页</a>
+            &nbsp;|&nbsp;
+            <a href="javascript:void(0)">帮助与文档 </a>
+        </div>
+    </div>
+</div>
+<div id="changePwdWindow" style="display: none;">
+    <div id="cpwin" class="easyui-window" closed="true" title="修改密码" style="width:350px;height:190px;" modal="true">
+        <form method="post" id="changeForm">
+            <br>
+            <table>
+                <tr>
+                    <td class="info-td">原密码：</td>
+                    <td><input type="password" id="oldPass" name="oldPass"/>&nbsp;<font color=red>*</font></td>
+                </tr>
+                <tr>
+                    <td class="info-td">新密码：</td>
+                    <td><input type="password" id="newPass" name="newPass"/>&nbsp;<font color=red>*</font></td>
+                </tr>
+                <tr>
+                    <td class="info-td">重复密码：</td>
+                    <td><input type="password" id="newPass1" name="newPass1"/>&nbsp;<font color=red>*</font></td>
+                </tr>
+            </table>
+            <br>
+            <a class="easyui-linkbutton" iconcls="icon-ok" href="javascript:void(0)" onclick="doSavePassword()">保存</a>
+            <a class="easyui-linkbutton" iconcls="icon-cancel" href="javascript:void(0)"
+               onclick="doClosePassword()">关闭</a>
+        </form>
+    </div>
+</div>
+<script type="text/javascript" src="/script/inputTipsUtil.js" />
+<script type="text/javascript" src="/script/md5.js"></script>
+
+<script type="text/javascript">
+    function doChangePassword() {
+        if ("admin" == '[[ ${session.accountSession.accountName} ]]') {
+            // if('<s:property value="#session.accountSession.userName==#session.accountSession.accountName" />'=='true'){
+            $.messager.alert('提示', '该用户为系统用户，不能在此修改密码！');
+            return;
+        }
+        $('#changePwdWindow').css('display', '');
+        $('#changeForm').form('clear');
+        $('#cpwin').window({top: 200});
+        $('#cpwin').window('open');
+    }
+
+    function doSavePassword() {
+        var oldPass = $('#oldPass').val();
+        var newPass = $('#newPass').val();
+        $('#changeForm').form('submit', {
+            url: "/web/login/changePassword",
+            onSubmit: function () {
+                if (oldPass == "") {
+                    $.messager.alert('提示', '原密码不能为空');
+                    return false;
+                }
+                if (newPass == "") {
+                    $.messager.alert('提示', '新密码不能为空');
+                    return false;
+                }
+                if (newPass.length < 4) {
+                    $.messager.alert('提示', '新密码长度不能小于4位');
+                    return false;
+                }
+                if (newPass != $('#newPass1').val()) {
+                    $.messager.alert('提示', '两次输入的密码不相等');
+                    return false;
+                }
+                if (newPass == oldPass) {
+                    $.messager.alert('提示', '新密码与旧密码不能相同');
+                    return false;
+                }
+                MD5_Typ = 'Typ32';
+                $("#oldPass").val((MD5(oldPass)));
+                $("#newPass").val((MD5(newPass)));
+            },
+            success: function (data) {
+                var json = eval('(' + data + ')');
+                if (json.success == 1) {
+                    $.messager.alert('提示', '修改密码成功');
+                    $('#cpwin').window('close');
+                } else {
+                    $("#oldPass").val((oldPass));
+                    $("#newPass").val((newPass));
+                    $.messager.alert('提示', '数据提交处理失败，原因：' + json.info);
+                }
+            }
+        });
+    }
+
+    function doClosePassword() {
+        $('#cpwin').window('close');
+    }
+</script>

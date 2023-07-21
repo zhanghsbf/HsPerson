@@ -1,0 +1,143 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+<head>
+	<div th:include="common/header.html"/>
+<style>
+.left-div{width:530px;border-left:0px;border-top:0px;border-bottom:0px;}
+.layout-panel-west .panel-header{border-left:0px;border-top:0px;}
+.right-div{height:150px;border:0px;}
+.layout-panel-center .panel-header{border-left:0px;border-top:0px;border-right:0px;}
+
+.panel-title a:link{color:blue}
+.panel-title a:visited{color:blue;}
+.panel-title a:hover{color:blue;}
+.datagrid-cell a:hover{color:blue;}
+.datagrid-cell a:visited{color:blue;}
+.datagrid-cell a:hover{color:blue;}
+</style>
+</head>
+<body>
+	<div class="easyui-layout main-div">
+        <div region="west" class="left-div">
+            <table id="dg1" toolbar="#tb1"></table>
+		    <div id="tb1">
+		    	&nbsp;编码：<input id="typeCode" style="width:80px"/>
+		        <a href="#" onclick="doSearch()" class="easyui-linkbutton" iconCls="icon-search" plain="true">查询</a>
+		        <sys:permission code="editExtModelMng">
+		        <a href="#" onclick="doEdit()" class="easyui-linkbutton" iconCls="icon-edit" plain="true">维护</a>
+		        </sys:permission>
+		        <a href="#" onclick="doBack()" class="easyui-linkbutton" iconCls="icon-back" plain="true">返回</a>
+		    </div>
+        </div>
+        <div region="center" class="right-div" >
+		    <table id="dg2" toolbar="#tb2"></table>
+		    <div id="tb2">
+		        <a href="#" onclick="doViewExpress()" class="easyui-linkbutton" iconCls="icon-view" plain="true">查看表述</a>
+		    </div>
+        </div>
+    </div>	
+    <div id="w3" class="easyui-window" style="width:700;height:350;text-align:center;background:#f1f6ff" title="行业扩展模型属性表述（替换处用\${n}标记,n从0开始）" modal="true">
+        <table id="dg3"></table>
+    </div>
+	<script type="text/javascript">
+		var industryValue = '[[${industryValue}]]';
+		var industryName = '[[${industryName}]]';
+	</script>
+    <script type="text/javascript" th:inline="none">
+    	var viewCode=[],viewId=[];
+        $(function () { 
+        	$('#w3').window('close');
+            $('#dg1').datagrid({
+            	url:"/tag/tagExtModel/init?industryType="+industryValue,
+                rownumbers:true,
+                title:'行业扩展模型数据类型（<font color="blue">'+industryName+'</font>）',
+                border:false,
+                fit: true,
+                singleSelect:true,
+                pagination:true,
+                pageSize: 15,
+                pageList: [15,20,30],
+                beforePageText: '第',
+                afterPageText: '页    共 {pages} 页',  
+                displayMsg: '当前显示 {from} - {to} 条记录   共 {total} 条记录',
+                columns:[[
+                    {field:'code',title:'类编码',width:100,halign:'center',sortable:true},
+                    {field:'parentTypeCode',title:'父类',width:100,halign:'center',sortable:true},
+                    {field:'name',title:'类名称',width:100,halign:'center',sortable:true},
+                    {field:'typeName',title:'类类型',width:60,align:'center',sortable:true},
+                    {field:'isFirstShow',title:'首先显示',width:60,align:'center',sortable:true,formatter:isOrNo},
+                    {field:'memo',title:'类说明',width:170,halign:'center',sortable:true}
+                ]],
+                onClickRow:function(index,node){
+                	$("#dg2").datagrid('getPanel').panel('setTitle','行业扩展模型数据类型属性（<font color=blue>'+node.code+'</font>）');
+                	viewCode=[node.code];
+                	viewId=[node.id];
+                	var param = {belongExtTypeId : node.id};
+                    $("#dg2").datagrid("load", param);
+                }
+            });
+            $('#dg2').datagrid({
+            	url:"/tag/tagExtModel/initField",
+                rownumbers:true,
+                title:'行业扩展模型数据类型属性',
+                border:false,
+                fit: true,
+                singleSelect:true,
+                pagination:true,
+                pageSize: 15,
+                pageList: [15,20,30],
+                beforePageText: '第',
+                afterPageText: '页    共 {pages} 页',  
+                displayMsg: '当前显示 {from} - {to} 条记录   共 {total} 条记录',
+                columns:[[
+					{field:'dataTypeElement.code',title:'属性要素编码',width:180,halign:'center'},
+                    {field:'dataTypeElement.name',title:'属性要素名称',width:120,halign:'center'},
+                    {field:'typeCode',title:'数据类型',width:140,align:'center'},
+                    {field:'typeLength',title:'长度',width:40,align:'center'},
+                    {field:'typePrecision',title:'精度',width:40,align:'center'},
+                    {field:'isArray',title:'是否列表',width:60,align:'center',formatter:isOrNo},
+                    {field:'isQuery',title:'是否查询',width:60,align:'center',formatter:isOrNo},
+                    {field:'memo',title:'备注',width:300,halign:'center'}
+                ]]
+            });
+            $('#dg3').datagrid({
+                rownumbers:true,
+                border:false,
+                fit: true,
+                singleSelect:true,
+                pagination:true,
+                pageSize: 10,
+                pageList: [10,15,20],
+                beforePageText: '第',
+                afterPageText: '页    共 {pages} 页',  
+                displayMsg: '当前显示 {from} - {to} 条记录   共 {total} 条记录',
+                columns:[[
+                    {field:'typeName',title:'表述类型',width:100,align:'center',sortable:true},
+                    {field:'express',title:'表述模版',width:530,halign:'center',sortable:true}
+                ]]
+            });
+        });
+        function doSearch(){
+        	var param = {typeCode : $('#typeCode').val()};
+            $("#dg1").datagrid("load", param);
+        }
+        function doViewExpress(){
+        	var rows = $('#dg2').datagrid('getSelected');
+        	if(rows==null)
+            {
+        		$.messager.alert('提示','请选择需要查看表述的行业扩展模型属性记录'); 
+              	return;
+            }
+        	var url = "/tag/tagExtModel/initExpress?fieldId="+rows.id;
+            $("#dg3").datagrid("load", url );
+        	$('#w3').window({top:50});
+        	$('#w3').window('open');
+        }
+        function doEdit(){
+        	location.href="/tag/tagExtModel/toDetail?type=1&id="+industryValue;
+        }
+        function doBack(){
+        	location.href="/tag/tagExtModel/toEdit";
+        }
+    </script>
+</body>

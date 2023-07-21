@@ -1,0 +1,425 @@
+﻿<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+<head>
+    <div th:include="common/header.html"/>
+<style>
+.left-div{width:300px;border-left:0px;border-top:0px;border-bottom:0px;}
+.layout-panel-west .panel-header{border-left:0px;border-top:0px;}
+.right-div{height:150px;border:0px;}
+.layout-panel-center .panel-header{border-left:0px;border-top:0px;border-right:0px;}
+.panel-div{height:100%;border:0px;}
+</style>
+</head>
+<body>
+    <div class="easyui-layout main-div">
+        <div region="west" class="left-div" title="标签体系树">
+            <ul id="tt"></ul>
+        </div>
+        <div region="center" class="right-div" title="详细信息" >
+			<div class="easyui-panel panel-div">
+				<div id="tb" style="border-bottom:1px solid #95B8E7;"></div>
+				<br>
+				<form method="post" id="viewForm"> 
+				<input type="hidden" id="viewLeaf" name="leaf"/>
+				<table width=500>
+					<tr>
+						<td class="info-td" width=25%>节点名称：</td>
+						<td><input type="text" name="name"/></td>
+					</tr>
+					<tr> 
+						<td class="info-td">节点类型：</td> 
+						<td><input type="text" name="typeStr"/></td> 
+					</tr>
+					<tr> 
+						<td class="info-td">对应值：</td>
+						<td><input type="text" name="value"/></td>
+					</tr>
+					<tr> 
+						<td class="info-td">是否可用：</td>
+						<td><input type="text" name="enableStr"/></td>
+					</tr>
+					<tr> 
+						<td class="info-td">所属行业：</td>
+						<td><input type="text" name="industryTypeStr"/></td>
+					</tr>
+				</table>
+				</form>
+				<br>
+			</div>
+        </div>
+    </div>
+    <div id="vertexWin" class="easyui-window" style="width:350;height:220;" title="维护节点" modal="true">
+            <br>
+            <form method="post" id="actionForm"> 
+                <input type="hidden" id="id" name="id" />
+                <input type="hidden" id="parentId" name="parentId" />
+                <table width=100%> 
+                    <tr> 
+                        <td class="info-td">节点名称：</td> 
+                        <td><input type="text" id="name" name="name" />&nbsp;<font color=red>*</font></td> 
+                    </tr>
+                    <tr> 
+                        <td class="info-td">对应值：</td> 
+                        <td><input type="text" id="value" name="value" /></td> 
+                    </tr>
+                    <tr>
+	                    <td class="info-td">节点类型：</td>
+	                    <td>
+	                    	<select class="easyui-combobox" id="type" name="type" data-options="editable:false,panelHeight:'auto'">
+	                           <sys:option code="vertexType" />
+	                        </select>
+	                    </td>
+                    </tr>
+                    <tr id="industryTypeTr">
+	                    <td class="info-td">所属行业：</td>
+	                    <td>
+	                    	<select class="easyui-combobox" id="industryType" name="industryType" data-options="editable:false,panelHeight:'auto'">
+	                           <sys:option code="industryType" />
+	                        </select>
+	                    </td>
+                    </tr>
+                </table>
+                <br>
+                <a class="easyui-linkbutton" iconcls="icon-ok" href="javascript:void(0)" onclick="doSave()">保存</a> 
+                <a class="easyui-linkbutton" iconcls="icon-cancel" href="javascript:void(0)" onclick="doClose()">关闭</a> 
+            </form>
+            <br>
+    </div> 
+    <div id="expressWin" class="easyui-window" style="width:700;height:350;text-align:center;background:#f1f6ff" title="基础模型属性表述（替换出用\${n}标记,n从0开始）" modal="true">
+        <table id="dg1" toolbar="#tb1"></table>
+    	<sys:permission code="editTagTree">
+	    <div id="tb1">
+	        <a href="#" onclick="doAddVertexExpress()" class="easyui-linkbutton" iconCls="icon-add" plain="true">添加</a>
+	        <a href="#" onclick="doEditVertexExpress()" class="easyui-linkbutton" iconCls="icon-edit" plain="true">修改</a>
+	        <a href="#" onclick="doDeleteVertexExpress()" class="easyui-linkbutton" iconCls="icon-remove" plain="true">删除</a>
+	    </div>
+    	</sys:permission>
+    </div>
+    <div id="expWin" class="easyui-window" style="width:350;height:255;text-align:center;background:#f1f6ff" title="维护数据类型属性表述" modal="true">
+            <br>
+            <form method="post" id="actionForm1"> 
+                <input type="hidden" id="id" name="id" />
+                <input type="hidden" id="vertexId" name="vertexId" />
+                <table width=100%> 
+                    <tr> 
+                        <td class="info-td">表述类型：</td> 
+                        <td>
+                        	<select class="easyui-combobox" id="type" name="type" data-options="editable:false,panelHeight:'auto'">
+                            <sys:option code="expressType"></sys:option>
+                            </select>&nbsp;<font color=red>*</font>
+                        </td> 
+                    </tr>
+                    <tr> 
+                        <td class="info-td">表述模版：</td> 
+                        <td><textarea id="express" name="express" style="height:100;"/></textarea>&nbsp;<font color=red>*</font></td> 
+                    </tr>
+                </table>
+                <br>
+                <a class="easyui-linkbutton" iconcls="icon-ok" href="javascript:void(0);" onclick="doSaveVertexExpress()">保存</a> 
+                <a class="easyui-linkbutton" iconcls="icon-cancel" href="javascript:void(0);" onclick="doCloseVertexExpress()">关闭</a> 
+            </form>
+            <br>
+    </div>
+    <script type="text/javascript" th:inline="none">
+        function doAdd(){
+            var node = $('#tt').tree('getSelected');
+            if(node==null){
+                $.messager.alert('提示','请选择需要增加标签节点的父节点');
+                return;
+            }
+            $('#actionForm').form('clear');
+            $('#parentId').attr('value',node.id);
+            $('#type').combobox('setValue',1);
+            $('#industryType').combobox('setValue',1);
+            if(node.id=="-1"){
+                $('#industryTypeTr').css('display','');
+            }else{
+                $('#industryTypeTr').css('display','none');
+            }
+            $('#vertexWin').window({top:110});
+            $('#vertexWin').window('open');
+        }
+        function doDelete(){
+            var node = $('#tt').tree('getSelected');
+            if(node==null){
+                $.messager.alert('提示','请选择需要删除的数据');
+                return;
+            }
+            if(node.id=='-1'){
+                $.messager.alert('提示','根节点不能被删除');
+                return;
+            }
+            $.messager.confirm('询问', '删除该节点，将删除该节点所有相关边，但也可能会产生孤立节点，您确定删除该节点吗？', function(rtn){
+                if (rtn){
+                    $.ajax({
+                        type: "POST",
+                        url:"/tag/tagNet/deleteVertex",
+                        data: { id: node.id},
+                        success: function (data) {
+                            var json=eval('('+data+')');
+                            if(json.success==1){
+                                $.messager.alert('提示','删除数据成功');
+                                $('#tt').tree('remove', node.target);
+                                $('#tt').tree('select', $('#tt').tree('find', '-1').target);
+                                $('#viewForm').form('clear');
+                            }else{
+                                $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+        function doEdit(){
+            var node = $('#tt').tree('getSelected');
+            if(node==null){
+                $.messager.alert('提示','请选择需要修改的标签集');
+                return;
+            }
+            if(node.id=='-1'){
+                $.messager.alert('提示','根节点不能被修改');
+                return;
+            }
+            $.ajaxSetup({cache: false});
+            $('#actionForm').form('load',"/tag/tagNet/loadVertex?id="+node.id);
+            $('#industryTypeTr').css('display','none');
+            $('#vertexWin').window({top:110});
+            $('#vertexWin').window('open');
+        }
+        function doSave(){
+            var url = "";
+            if($('#id').val()==""){
+                url = "/tag/tagNet/saveVertex";
+            }else{
+                url = "/tag/tagNet/updateVertex";
+            }
+            $('#actionForm').form('submit',{
+                url:url,
+                onSubmit: function(){
+                    if($('#name').val()==""){
+                        $.messager.alert('提示','节点名称不能为空');
+                        return false;
+                    }
+                    if($('#value').val().length>10){
+                        $.messager.alert('提示','对应值长度不能超过10');
+                        return false;
+                    }
+                    if($('#type').combobox('getValue')==4){
+                        if($('#value').val()==""){
+                            $.messager.alert('提示','当节点为标签节点时，对应值不能为空');
+                            return false;
+                        }
+                        if(isNaN($('#value').val()) || $('#value').val().indexOf(".")>=0 || $('#value').val()-0<=0){
+                            $.messager.alert('提示','对应值必须为大于0正整数据');
+                            return false;
+                        }
+                    }
+                },
+                success:function(data){
+                    var json=eval('('+data+')');
+                    if(json.success==1){
+                        $('#vertexWin').window('close');
+                        var node = $('#tt').tree('getSelected');
+                        if($('#id').val()==""){
+                            if(node){
+                                $("#tt").tree("append",{
+                                    parent: node.target,
+                                    data:[{
+                                        "id":json.id,
+                                        "text":nameHtml($('#name').val(),$('#type').combobox('getValue'))
+                                    }]
+                                });
+                            }
+                        }else{
+                            if(node){
+                                node.text = nameHtml($('#name').val(),$('#type').combobox('getValue'));
+                                $("#tt").tree("update", node);
+                            }
+                            $('#viewForm').form('load',"/tag/tagNet/loadVertex?id="+node.id);
+                        }
+                    }else{
+                        $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                    }
+                }
+            });
+        }
+        function nameHtml(name,type){
+            if($('#type').combobox('getValue')==4){
+                return "<font color=green><b>" + name + "</b></font>";
+            }else if($('#type').combobox('getValue')==3){
+                return "<font color=blue><b>" + name + "</b></font>";
+            }else if($('#type').combobox('getValue')==2){
+                return "<b>" + name + "</b>";
+            }else{
+                return name;
+            }
+        }
+        function doClose(){
+            $('#vertexWin').window('close');
+        }
+        function doBan(){
+            var node = $('#tt').tree('getSelected');
+            if(node==null){
+                $.messager.alert('提示','请选择需要启禁的数据');
+                return;
+            }
+            $.ajax({
+                type: "POST",
+                url:"/tag/tagNet/banVertex",
+                data: { id: node.id},
+                success: function (data) {
+                    var json=eval('('+data+')');
+                    if(json.success==1){
+                        $.messager.alert('提示','启禁节点成功');
+                        $('#viewForm').form('load',"/tag/tagNet/loadVertex?id="+node.id);
+                    }else{
+                        $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                    }
+                }
+            });
+        }
+        function doEditExpress(){
+            var node = $('#tt').tree('getSelected');
+            if(node==null){
+                $.messager.alert('提示','请选择需要维护表述的规则节点');
+                return;
+            }
+            if(node.tmp!=3){
+                $.messager.alert('提示','只有规则节点才可以进行表述维护');
+                return;
+            }
+            var url = "/tag/tagNet/initExpress?vertexId="+node.id;
+            $("#dg1").datagrid("load", url );
+            $('#expressWin').window({top:50});
+            $('#expressWin').window('open');
+        }
+        function doAddVertexExpress(){
+            var node = $('#tt').tree('getSelected');
+            if(node==null){
+                $.messager.alert('提示','请选择需要维护表述的规则节点');
+                return;
+            }
+            $('#actionForm1').form('clear');
+            $('#vertexId',$('#actionForm1')).val(node.id);
+            $('#expWin').window({top:110});
+            $('#expWin').window('open');
+        }
+        function doEditVertexExpress(){
+            var node = $('#tt').tree('getSelected');
+            if(node==null){
+                $.messager.alert('提示','请选择需要维护表述的规则节点');
+                return;
+            }
+            var rows1 = $('#dg1').datagrid('getSelected');
+            if(rows1==null){
+                $.messager.alert('提示','请选择需要修改的标签表述');
+                return;
+            }
+            $('#actionForm6').form('clear');
+            $('#vertexId',$('#actionForm1')).val(node.id);
+            $('#id',$('#actionForm1')).val(rows1.id);
+            $('#express',$('#actionForm1')).val(rows1.express);
+            $('#type',$('#actionForm1')).combobox('setValue',rows1.type);
+            $('#expWin').window({top:110});
+            $('#expWin').window('open');
+        }
+        function doDeleteVertexExpress(){
+            var rows = $('#dg1').datagrid('getSelected');
+            if(rows==null){
+                $.messager.alert('提示','请选择需要删除的标签表述记录');
+                return;
+            }
+            $.messager.confirm('询问', '确定要删除该数据信息？', function(rtn){
+                if (rtn){
+                    $.ajax({
+                        type: "POST",
+                        url:"/tag/tagNet/deleteExpress",
+                        data: { id: rows.id},
+                        success: function (data) {
+                            var json=eval('('+data+')');
+                            if(json.success==1){
+                                $.messager.alert('提示','删除数据成功');
+                                $('#dg1').datagrid('reload');
+                            }else{
+                                $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+        function doSaveVertexExpress(){
+            $('#actionForm1').form('submit',{
+                url:"/tag/tagNet/saveExpress",
+                onSubmit: function(){
+                    if($('#type',$('#actionForm1')).combobox('getValue')==""){
+                        $.messager.alert('提示','表述类型不能为空');
+                        return false;
+                    }
+                    if($('#express',$('#actionForm1')).val()==""){
+                        $.messager.alert('提示','表述模版不能为空');
+                        return false;
+                    }
+                },
+                success:function(data){
+                    var json=eval('('+data+')');
+                    if(json.success==1){
+                        $('#expWin').window('close');
+                        $.messager.alert('提示','保存数据成功');
+                        $('#dg1').datagrid('reload');
+                    }else{
+                        $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                    }
+                }
+            });
+        }
+        function doCloseVertexExpress(){
+            $('#expWin').window('close');
+        }
+
+        var menuitems = [];
+        menuitems.push({iconCls:"icon-view",text:"节点表述",handler:doEditExpress});
+    </script>
+    <sys:permission code="editTagTree">
+        <script type="text/javascript">
+        menuitems.push({iconCls:"icon-add",text:"添加节点",handler:doAdd});
+        menuitems.push({iconCls:"icon-edit",text:"修改节点",handler:doEdit});
+        menuitems.push({iconCls:"icon-remove",text:"删除节点",handler:doDelete});
+        menuitems.push({iconCls:"icon-reload",text:"启禁节点",handler:doBan});
+        </script>
+    </sys:permission>
+    <script type="text/javascript" th:inline="none">
+    $(function () { 
+    	$('#vertexWin').window('close'); 
+    	$('#expressWin').window('close'); 
+    	$('#expWin').window('close');
+    	$('#tb').toolbar({
+            items:menuitems
+        });
+	    $('#tt').tree({
+	        url:"/tag/tagNet/netTree?type=0",
+	        width:240,
+	        lines:true,
+	        onClick:function (node) {
+                $('#viewForm').form('load',"/tag/tagNet/loadVertex?id="+node.id);
+            }
+	    });
+	    $('#dg1').datagrid({
+            rownumbers:true,
+            border:false,
+            fit: true,
+            singleSelect:true,
+            pagination:true,
+            pageSize: 10,
+            pageList: [10,15,20],
+            beforePageText: '第',
+            afterPageText: '页    共 {pages} 页',  
+            displayMsg: '当前显示 {from} - {to} 条记录   共 {total} 条记录',
+            columns:[[
+                {field:'typeName',title:'表述类型',width:100,align:'center',sortable:true},
+                {field:'express',title:'表述模版',width:530,halign:'center',sortable:true}
+            ]]
+        });
+    });
+
+	</script>

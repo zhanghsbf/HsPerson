@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+<head>
+  <meta charset="UTF-8">
+  <title>金融大数据分析平台</title>
+  <style>
+    body{margin:0px;text-align:center;}
+    a:link{color:#FFFFFF;text-decoration:none;}
+    a:visited{color:#FFFFFF;text-decoration:none;;}
+    a:hover{color:#FFFFFF;text-decoration:none;;}
+    .top_div{width:100%;background:#673BB7;height:100px;}
+    .logo_div{width:1200px;margin:0px auto;}
+    .logo_text{height:100px;color:#FFFFFF;float:left;width:500px;text-align:left;}
+    .logo_text_cn{height:40px;font-family:Microsoft YaHei;line-height:40px;font-size:38px;font-weight:bold;margin-top:25px;letter-spacing: 4px;}
+    .logo_text_en{height:20px;line-height:20px;font-family:Georgia,Microsoft YaHei;font-size:14px;}
+    .logo_link{height:100px;line-height:100px;font-size:15px;float:right;width:500px;text-align:right;color:#FFFFFF;}
+    .logo_link_text{margin:10px;text-align:center;font-family:Microsoft YaHei;font-size:16px;}
+    .logo_link_span{border-left:1px solid #FFFFFF;}
+    .case_title_div{width:100%;height:70px;font-size:48px;font-family:Microsoft YaHei;font-weight:bold;color:#471B97;padding-top:30px;}
+    .case_sub_title_div{width:100%;height:30px;font-size:16px;font-family:Microsoft YaHei;color:#471B97;padding-bottom:10px;}
+    .case_all_div{width:1200;margin:0px auto;display:inline-table;}
+    .case_row_div{width:100%;height:260px;}
+    .case_cell_left{width:290px;float:left;margin-left:10px;}
+    .case_cell_right{width:290px;float:right;}
+    .case_cell_img{height:200px;width:100%;border:1px solid #F2F2F2;}
+    .case_cell_text{font-family:Microsoft YaHei;font-size:18px;color:#FFFFFF;width:100%;margin:1px;height:35px;line-height:35px;background:#471B97}
+  </style>
+  <script src="script/jquery-2.1.1.min.js" ></script>
+  <script src="script/jquery.rotatingSlideshow.js" ></script>
+  <link href="css/jquery.rotatingSlideshow.css"  rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="top_div" id="topDiv">
+  <div class="logo_div">
+    <div class="logo_text">
+      <div class="logo_text_cn">金融大数据分析平台</div>
+      <div class="logo_text_en">An Analytics Platform and Web Interface For Big Fintech Data</div>
+    </div>
+    <div class="logo_link">
+      <span class="logo_link_span"></span>
+      <span class="logo_link_text"><a href="system/login/to" >管理控制台</a></span>
+      <span class="logo_link_span"></span>
+      <span class="logo_link_text"><a href="web/login/to" >数据展现中心</a></span>
+      <span class="logo_link_span"></span>
+      <span class="logo_link_text">帮助与文档</span>
+      <span class="logo_link_span"></span>
+      <span class="logo_link_text">联系我们</span>
+      <span class="logo_link_span"></span>
+    </div>
+  </div>
+</div>
+<div class="rotating-slideshow">
+  <div id="slider-main" data-position="1" data-deg="0">
+    <div id="slider-btns" class="button">
+      <a id="pos1" href="#" class="pos1" data-position="1"></a>
+      <a id="pos2" href="#" class="pos2" data-position="4"></a>
+      <a id="pos3" href="#" class="pos3" data-position="3"></a>
+      <a id="pos4" href="#" class="pos4" data-position="2"></a>
+    </div>
+    <div class="slider-overlay">
+      <div class="active" data-position="1">
+        <h3>客户画像</h3>
+        <p>综合客户的自然属性数据、社交数据、行为数据等各类信息，根据具体的业务需求制定画像规则，利用大数据工具、知识图谱、机器学习、自然语言处理等技术，形成客观的客户画像及客户分析报告，为企业或机构提供政策与决策上的数据支持。</p>
+      </div>
+      <div data-position="2">
+        <h3>智能业务搜索</h3>
+        <p>使用ElasticSearch系列开源工具，利用分布式存储技术，提供海量数据的精准搜索或基于倒排索引的相关指数搜索，同时利用知识图谱组织与客户相关的信息，展示各用户的基本数据、关联数据、综合分析数据与总结性信息。</p>
+      </div>
+      <div data-position="3">
+        <h3>大规模数据计算</h3>
+        <p>利用hadoop系列、spark系列以及其他的大数据生态分析工具，完成对大批量数据的导入、存储、分析、监控、展现，并提供实时的或批量的数据分布式处理。具有快速响应、高可靠等特性。</p>
+      </div>
+      <div data-position="4">
+        <h3>知识图谱</h3>
+        <p>本平台采用包括 Bing， Google， Yahoo! 和 Yandex 在内的搜索引擎合作推出的结构化数据协作组织Schema.org产品，组合金融领域客户的自然属性、金融属性、社交与关系属性、大数据分析结果属性，形成国际化的客户知识图谱。</p>
+      </div>
+    </div>
+    <div class="slides">
+      <img class="active" src="images/slide1.jpg"  data-position="1">
+      <img src="images/slide4.jpg"  data-position="2">
+      <img src="images/slide3.jpg"  data-position="3">
+      <img src="images/slide2.jpg"  data-position="4">
+    </div>
+    <img class="spinner-btn" src="images/button.png"  alt="">
+    <img class="spinner" src="images/slides-overlay.jpg"  alt="">
+  </div>
+</div>
+<div class="case_title_div" id="caseTitleDiv">产品.案例</div>
+<div class="case_sub_title_div" id="caseSubTitleDiv">PRODUCT & CASE</div>
+<div class="case_all_div">
+  <div class="case_row_div">
+    <div class="case_cell_left">
+      <div class="case_cell_img"><img src="images/case01.jpg"  /></div>
+      <div class="case_cell_text">客户数据搜索引擎</div>
+    </div>
+    <div class="case_cell_left">
+      <div class="case_cell_img"><img src="images/case02.jpg"  /></div>
+      <div class="case_cell_text">大批量WIFI访问数据分析统计</div>
+    </div>
+    <div class="case_cell_left">
+      <div class="case_cell_img"><img src="images/case03.jpg"  /></div>
+      <div class="case_cell_text">医疗机构药品关系图计算</div>
+    </div>
+    <div class="case_cell_right">
+      <div class="case_cell_img"><img src="images/case04.jpg"  /></div>
+      <div class="case_cell_text">金融客户知识图谱</div>
+    </div>
+  </div>
+  <div class="case_row_div">
+    <div class="case_cell_left">
+      <div class="case_cell_img"><img src="images/case05.jpg"  /></div>
+      <div class="case_cell_text">金融大数据解决方案</div>
+    </div>
+    <div class="case_cell_left">
+      <div class="case_cell_img"><img src="images/case06.jpg"  /></div>
+      <div class="case_cell_text">第三方支付解决方案</div>
+    </div>
+    <div class="case_cell_left">
+      <div class="case_cell_img"><img src="images/case07.jpg"  /></div>
+      <div class="case_cell_text">银行渠道类解决方案</div>
+    </div>
+    <div class="case_cell_right">
+      <div class="case_cell_img"><img src="images/case08.jpg"  /></div>
+      <div class="case_cell_text">聚合支付解决方案</div>
+    </div>
+  </div>
+</div>
+<div th:include="common/webFooter.html"></div>
+<script>
+  $(document).ready(function(){
+    $('.rotating-slideshow').rotatingSlideshow({
+      sliderHolder: '#slider-main',
+      btnsHolder: '#slider-btns',
+      audioHolder: '#slider-sound',
+      auto: true,
+      autoSpeed: '6000'
+    });
+  });
+</script>
+</body>
+</html>

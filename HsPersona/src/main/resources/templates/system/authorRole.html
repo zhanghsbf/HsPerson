@@ -1,0 +1,75 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+<head>
+    <style>
+    .btn-div{padding-left:20px;}
+    .panel-header{border-top:0px;border-left:0px;border-right:0px;}
+    </style>
+</head>
+<body>
+<div th:include="common/header.html"/>
+<div id="cc" class="easyui-layout" style="width:100%;height:100%">
+    <div region="north" style="height:60px;border:0px;background:#f1f6ff" title="角色授权">
+        <div id="tb" style="border-bottom:1px solid #95B8E7;"></div>
+    </div>
+    <div region="center" style="border:0px;">
+        <ul id="tt"></ul>
+    </div> 
+</div>
+<script type="text/javascript" th:inline="javascript">
+    var roleId = [[${id}]];
+</script>
+<script type="text/javascript" th:inline="none">
+$(function(){
+    $('#tb').toolbar({
+        items:[{
+            iconCls:"icon-save",
+            text:"保存",
+            handler:doSave
+        },{
+            iconCls:"icon-back",
+            text:"返回",
+            handler:doBack
+        }]
+    });
+    $('#tt').tree({
+        url:"/system/menu/treePermission?roleId="+roleId,
+        lines:true,
+        width:300,
+        checkbox:true
+    });
+});
+function doSave(){
+    var nodes = $('#tt').tree('getChecked');
+    var ids = "";
+    for(var i=0;i<nodes.length;i++)
+    {
+         if($('#tt').tree('isLeaf',nodes[i].target))
+            ids = ids+";"+nodes[i].id;
+    }
+    if(ids.length>0)
+        ids = ids.substring(1);
+    $.ajax({  
+        type: "POST",
+        url:"/system/role/assign",
+        data: { ids: ids, roleId : roleId},
+        success: function (data) {
+            var json=eval('('+data+')');  
+            if(json.success==1)
+            {
+                $.messager.alert('提示','授权角色操作成功','info',function(){
+                    doBack();
+                });
+            }
+            else
+            {
+                $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+            }
+        }
+    });
+}
+function doBack(){
+    location.href="/system/role/to";
+}
+</script>
+</body>

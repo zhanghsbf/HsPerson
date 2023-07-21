@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+<body>
+<div th:include="common/header.html"/>
+<div id="panel" class="easyui-panel" title="修改个人信息" border="false" fit="true">
+    <br>
+    <form method="post" id="actionForm">
+        <input type="hidden" name="id" th:value="${user.id}"/>
+        <input type="hidden" name="orgId" th:value="${orgName}"/>
+        <table style="width:350px">
+            <tr>
+                <td class="info-td">姓名：</td>
+                <td><input type="text" id="realName" name="realName" th:value="${user.realName}"/></td>
+            </tr>
+            <tr>
+                <td colspan=4 align="center">
+                    <br><br>
+                    <a class="easyui-linkbutton" iconcls="icon-ok" href="#" onclick="doSave()">保存</a>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+<script>
+    function doSave() {
+        $('#actionForm').form('submit', {
+            url: '/system/user/save',
+            onSubmit: function () {
+                if ($('#realName').val() == "") {
+                    $.messager.alert('提示', '姓名不能为空');
+                    return false;
+                }
+            },
+            success: function (data) {
+                var json = eval('(' + data + ')');
+                if (json.success == 1) {
+                    $.messager.alert('提示', '保存数据成功');
+                } else {
+                    $.messager.alert('提示', '数据提交处理失败，原因：' + json.info);
+                }
+            }
+        });
+    }
+</script>
+</body>
+</html>

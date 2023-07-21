@@ -1,0 +1,41 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+<head>
+	<div th:include="common/header.html"/>
+<style>
+	*{font-size:14px;font-family:Helvetica}
+	.panel_div{line-height:25px;padding-left:30px;}
+	A:link {color: #C80000;TEXT-DECORATION: none;border-bottom: dotted 1px #C80000;}
+	A:visited {COLOR: #C80000;TEXT-DECORATION: none;border-bottom: dotted 1px #C80000;}
+	A:hover {COLOR: #FFFFFF;text-decoration: none;background-color:#C80000}
+	A:active {COLOR: #C80000;  text-decoration: none;;border-bottom: dotted 1px #C80000;}
+</style>
+</head>
+<body>
+<div id="panel" class="easyui-panel" data-options="border:0" title="数据模型组织结构">
+	<div class="panel_div">
+		<br>
+		<div>
+			【<a href="/tag/tagExtModel/toView" />返回</a>】
+			查看（<b>行业：[[${industryName}]]</b>）全部的层次：
+		</div>
+		<ul>
+			<li><a th:href="@{/tag/tagExtModel/modelWeb(industryValue=${industryValue},action='detail', key=${tagExtType.code})}" >所有类型父类　[[${tagExtType.code}]]</a></li>
+			<li><a th:href="@{/tag/tagExtModel/modelWeb(industryValue=${industryValue},action='list', key=${tagExtType.code},type=1)}" >所有基础数据类型　</a></li>
+			<li><a th:href="@{/tag/tagExtModel/modelWeb(industryValue=${industryValue},action='list', key=${tagExtType.code},type=2)}" >所有扩展数据类型　</a></li>
+			<li><a th:href="@{/tag/tagExtModel/modelWeb(industryValue=${industryValue},action='list', key=${tagExtType.code})}" >所有复合数据类型　</a></li>
+		</ul>
+		<div>复合类型出发点：</div>
+		<ul>
+			<li th:each="s:${tagExtTypeList}">
+				<a th:href="@{/tag/tagExtModel/modelWeb(industryValue=${industryValue},action='detail',key=${s.code})} " >
+					[[${s.code}]] [[${s.name}]]
+					<div th:if="${s.memo}!=''">
+						( [[${s.memo}]] )
+					</div>
+				</a>
+			</li>
+		</ul>
+	</div>
+</div>
+</body>

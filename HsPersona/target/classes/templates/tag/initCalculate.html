@@ -1,0 +1,244 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+<body>
+<div th:include="common/header.html"/>
+    <table id="dg" toolbar="#tb"></table>
+    <div id="tb">
+        &nbsp;主题：<input type="text" id="nameParam" />
+        &nbsp;创建时间：<input type="text" class="easyui-datebox" id="startDate" style="width:100"/>
+        -<input type="text" class="easyui-datebox" id="endDate" style="width:100"/>
+        <a href="#" onclick="doSearch()" class="easyui-linkbutton" iconCls="icon-search" plain="true">查询</a>
+        <a href="#" onclick="doReset()" class="easyui-linkbutton" iconCls="icon-reload" plain="true">重置</a>
+        <sys:permission code="editTagCalculate">
+        <a href="#" onclick="doAdd()" class="easyui-linkbutton" iconCls="icon-add" plain="true">添加</a>
+        <a href="#" onclick="doEdit()" class="easyui-linkbutton" iconCls="icon-edit" plain="true">修改</a>
+        <a href="#" onclick="doDelete()" class="easyui-linkbutton" iconCls="icon-remove" plain="true">删除</a>
+        <a href="#" onclick="doTag()" class="easyui-linkbutton" iconCls="icon-file" plain="true">维护计算标签</a>
+        </sys:permission>
+        <sys:permission code="startTagCalculate">
+        <a href="#" onclick="doStart()" class="easyui-linkbutton" iconCls="icon-start" plain="true">启动</a>  
+        </sys:permission>
+    </div>
+    <div id="w" class="easyui-window" style="padding-left:15px;width:350;height:175;" title="维护计算内容" modal="true">
+        	<br>
+            <form method="post" id="actionForm"> 
+                <input type="hidden" id="id" name="id" />
+                <table> 
+                    <tr>
+                    <td class="info-td">计算主题：</td>
+                    <td><input type="text" id="name" name="name"/>&nbsp;<font color=red>*</font></td>
+                    </tr>
+                    <tr>
+                    <td class="info-td">数据源路径：</td>
+                    <td><input type="text" id="dataPath" name="dataPath"/>&nbsp;<font color=red>*</font></td>
+                    </tr>
+                </table>
+                <br>
+                <a class="easyui-linkbutton" iconcls="icon-ok" href="javascript:void(0)" onclick="doSave()">保存</a> 
+                <a class="easyui-linkbutton" iconcls="icon-cancel" href="javascript:void(0)" onclick="doClose()">关闭</a> 
+            </form>
+            <br>
+    </div>
+    <div id="w1" class="easyui-window" style="width:910;height:440;" title="运行日志" modal="true">
+       	<div style="width:894px;height:403px;overflow:scroll;background:#FFFFFF;text-align:left" id="logs"></div>
+    </div>
+    <script type="text/javascript" th:inline="none">
+    	var readTime = null;
+        $(function () { 
+            $('#w').window('close'); 
+            $('#w1').window({
+            	top:20,
+                onBeforeClose:function(){ 
+                	if(readTime!=null){
+                    	clearInterval(readTime);
+                	}
+                }
+            });
+            $('#w1').window('close'); 
+            $('#dg').datagrid({
+                url:"/tag/tagCalculate/init",
+                rownumbers:true,
+                title:'数据计算配置列表',
+                border:false,
+                fit: true,
+                singleSelect:true,
+                pagination:true,
+                pageSize: 15,
+                pageList: [15,20,30],
+                beforePageText: '第',
+                afterPageText: '页    共 {pages} 页',  
+                displayMsg: '当前显示 {from} - {to} 条记录   共 {total} 条记录',
+                columns:[[
+                    {field:'userName',title:'用户名',width:80,align:'center'},
+                    {field:'name',title:'计算主题',width:230,halign:'center'},
+                    {field:'createDate',title:'创建日期',width:80,align:'center',formatter:dates},
+                    {field:'dataPath',title:'数据源路径',width:200,halign:'center'},
+                    {field:'startDate',title:'计算开始时间',width:130,align:'center',formatter:times},
+                    {field:'endDate',title:'计算结束时间',width:130,align:'center',formatter:times},
+                    {field:'logs',title:'计算日志',width:400,halign:'center'}
+                ]]
+            });
+        });
+        function doAdd()
+        {
+            $('#actionForm').form('clear');
+            $('#w').window('open'); 
+        }
+        function doEdit()
+        {
+            var rows = $('#dg').datagrid('getSelected');
+            if(rows==null)
+            {
+                $.messager.alert('提示','请选择需要修改的数据'); 
+                return;
+            }
+            $('#id',$('#actionForm')).val(rows.id);
+    		$('#name',$('#actionForm')).val(rows.name);
+    		$('#dataPath',$('#actionForm')).val(rows.dataPath);
+            $('#w').window('open'); 
+        }
+        function doDelete()
+        {
+            var rows = $('#dg').datagrid('getSelected');
+            if(rows==null)
+            {
+                $.messager.alert('提示','请选择需要删除的数据'); 
+                return;
+            }
+            $.messager.confirm('询问', '确定要删除该数据信息？', function(rtn){
+                if (rtn){
+                    $.ajax({  
+                        type: "POST",
+                        url:"/tag/tagCalculate/delete",
+                        data: {id : rows.id},
+                        success: function (data) {
+                            var json=eval('('+data+')');  
+                            if(json.success==1){
+                                $.messager.alert('提示','删除数据成功');
+                                $('#dg').datagrid('reload');
+                            }else{
+                                $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+        function doSave()
+        {
+            $('#actionForm').form('submit',{
+                url:"/tag/tagCalculate/save",
+                onSubmit: function(){
+                    if($('#name', $('#actionForm')).val()==""){
+                        $.messager.alert('提示','计算主题不能为空');
+                        return false;
+                    }
+                    if($('#dataPath', $('#actionForm')).val()==""){
+                        $.messager.alert('提示','数据路径不能为空');
+                        return false;
+                    }
+                },
+                success:function(data){
+                    var json=eval('('+data+')');  
+                    if(json.success==1){
+                        $('#w').window('close');
+                        $.messager.alert('提示','保存数据成功');
+                        $('#dg').datagrid('load');
+                    }else{
+                        $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                    }
+                }   
+            });
+        }
+        function doSearch()
+        {
+            var param = {
+           		name: $("#nameParam").val(),
+           		startTime:$("#startDate").datebox('getValue'),
+           		endTime:$("#endDate").datebox('getValue'),
+           	};
+            $("#dg").datagrid("load", param);
+        }
+        function doClose()
+        {
+            $('#w').window('close');
+        }
+        function doReset(){
+        	$("#nameParam").val("");
+        	$("#startDate").datebox('setValue',"");
+        	$("#endDate").datebox('setValue',"");
+        }
+        function doTag(){
+        	var rows = $('#dg').datagrid('getSelected');
+            if(rows==null){
+                $.messager.alert('提示','请选择需要维护标签的记录'); 
+                return;
+            }
+            location.href="/tag/tagCalculate/toUserSelectTagPage?calculateId="+rows.id;
+        }
+        function doStart()
+        {
+        	var rows = $('#dg').datagrid('getSelected');
+            if(rows==null){
+                $.messager.alert('提示','请选择需要启动的计算'); 
+                return;
+            }
+           if(rows.dataPath.indexOf("\$\{runDate\}")>0){
+           		$.messager.prompt('提示','若您确定要启动，请输入执行日期（yyyyMMdd）',function(text){
+            		if(text==null ){
+            			return ;
+            		}
+            		if(text==''){
+            			 $.messager.alert('提示','日期不能为空'); 
+            			 return ;
+            		}
+            		toStart({calculateId:rows.id,runDate:text});
+            	});
+            }else{
+            	$.messager.confirm('询问', '确定启动该计算？', function(rtn){
+                if (rtn){
+                    toStart({calculateId:rows.id,runDate:''});
+                }
+            });
+           }
+            
+        }
+        function toStart(param){
+        	   	$('#logs').html("");
+	   			readTime = setInterval("readLogs()",2000);
+	               $('#w1').window('open'); 
+	               $.ajax({  
+	                   type: "POST",
+	                   url:"/tag/tagCalculate/start",
+	                   data: param,
+	                   success: function (data) {
+	                       var json=eval('('+data+')');  
+	                       if(json.success==1){
+	                       		$.messager.alert('提示','计算结束，请根据日志判断计算结果');
+	                     		$('#d2').datagrid('reload');
+	                       }else{
+	                           $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+	                       }
+	                       if(readTime!=null){
+	              	clearInterval(readTime);
+	              	readLogs();
+	              }
+	                   }
+	               });
+	           }
+        
+        function readLogs(){
+        	$.ajax({  
+                type: "POST",
+                url:"/tag/tagCalculate/showCalculateLogs",
+                success: function (data) {
+                    if(data!=null && data!=''){
+                    	$('#logs').html($('#logs').html()+data);
+                    	document.getElementById('logs').scrollTop = document.getElementById('logs').scrollHeight 
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

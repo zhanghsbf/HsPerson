@@ -1,0 +1,80 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+<html>
+<head>
+<style type="text/css">
+	body{margin-top:50px;text-align:center;margin-bottom:50px;}
+	.border{margin:0px auto;border:1px dashed #E0E0E0;width:1000px;}
+	.info{font-size:14px;width:100%;text-align:left;margin:10px;line-height:23px;margin-bottom:30px;}
+	.block{padding:15px;border:1px dashed #808080;}
+	.line{border-bottom:1px dashed #808080;height:1px;line-height:1px;display:inline-block;}
+</style>
+</head>
+<body>
+	<div class="border">
+	<br>
+	<h1>快速使用步骤</h1>
+	<div style='line-height:80px;height:80px;'>
+	<span class='block'>数据上传</span>
+	<span class='line'>&nbsp;&nbsp;</span>
+	<span class='block'>数据组织</span>
+	<span class='line'>&nbsp;&nbsp;</span>
+	<span class='block'>数据计算</span>
+	<span class='line'>&nbsp;&nbsp;</span>
+	<span class='block'>数据展现</span>
+	</div>
+	<div class="info">
+	<b>1、上传数据</b><br>
+	方法一：下载数据文件，再使用上传文件的形式导入数据。<br>
+	　　（1）下载文件，文件下载地址：<a href='<sys:url url="/common/data.zip" />'>data.zip</a><br>
+	　　（2）解压文件，解压后有多个文件，其中一个是person.txt主文件，其他文件是从文件，主从之间是一对多的关系。<br>
+	　　（3）进入系统【数据预处理->数据抽取->HDFS文件系统管理】菜单。<br>
+	　　（4）可以在根目录下上传文件，也可以新建一个文件夹，进入该文件夹后在上传文件（推荐，假设新建文件夹data，以下的路径中就会包括data），点击【上传文件】按钮上传<br>
+	方法二：下载数据文件，将文件中的数据导入到数据库中，然后使用数据库抽取形式导入数据。<br>
+	　　（1）下载文件，文件下载地址：<a href="/common/data.zip">data.zip</a><br>
+	　　（2）解压文件，解压后有多个文件，其中一个是person.txt主文件，其他文件是从文件，主从之间是一对多的关系。<br>
+	　　（3）目前只支持mysql数据库，数据分隔符为\t。<br>
+	　　（4）进入系统【数据预处理->数据加工配置->数据库元配置】菜单，按格式新建数据源。<br>
+	　　（5）进入系统【数据预处理->数据抽取->关系数据库表导入】菜单，选择刚新建的数据源。<br>
+	　　（6）填入存储文件夹名称（若想提前新建，则可以进入【数据预处理->数据抽取->HDFS文件系统管理】中新建好）。<br>
+	　　（7）填入分布式分区字段（该字段的选择最好是主键）。<br>
+	　　（8）编写抽取sql，如果sql最后没有任何where条件，请在sql最后增加where 1=1的条件。<br>
+	　　（9）点击启动按钮，启动抽取，抽取结束后，可在【数据预处理->数据抽取->关系数据库表导入】菜单中的指定文件夹看到导入的数据。<br>
+	　　（10）重复上面的步骤，把下载的几个文件都抽取到hdfs中。<br>
+	<b>2、数据组织</b>：主要目的是把多个文件中的二维数据组织成立体JSON数据。<br>
+	　　注：数据结构说明：<br>
+	　　　　<b>用户</b>（person.txt）：0客户号(PK)，1客户管理机构，2中文姓名，3性别，4国籍，5民族，6客户销户机构，7出生日期，8销户员工标识，9移动电话，10客户生效机构。<br>
+	　　　　<b>理财产品</b>（finance.txt）：0客户号(FK)，1余额。<br>
+	　　　　<b>存款</b>（deposit.txt）：0客户号(FK)，1余额。<br>
+	　　　　<b>信用卡</b>（creditcardquota.txt）：0客户号(FK)，1余额。<br>
+	　　　　<b>家庭关系</b>（family.txt）：：0客户号(FK)，1关系人编号，2关系代码。<br>
+	　　（1）进入【数据预处理->数据转换->二维表转JSON】菜单。<br>
+	　　（2）点击【添加】按钮，所属行业为金融行业，主表数据类型选择Person，主表文件全路径填入上传的person.txt所在的文件路径。<br>
+	　　　　　注：若是文件上传形式，路径中需包括文件名(/data/person.txt)，如果是抽取模式，路径只到最后一级文件夹(/data/person)。<br>
+	　　（3）主表主键下标指主键在主表文件中(分隔符是\t)的位置，下表从0开始。<br>
+	　　（4）选中刚新建的记录，然后点击【维护主表映射】按钮，进入主表的映射配置界面。<br>
+	　　（5）点击弹出窗口的【添加】按钮，先选择Person的属性managementAgency，然后输入下标1（即managementAgency对应的是person.txt中的客户管理机构，列下标为1）。<br>
+	　　　　依次添加如下所示内容(0不需录入，因为已做主键)：{managementAgency,客户管理机构,1},{name,中文姓名,2},{gender,性别,3},{nationality,国籍,4},{nation,民族,5}<br>
+	　　　　{closeAgency,客户销户机构,6},{birthDate,出生日期,7},{closeStaffLabel,销户员工标识,8},{telephone,移动电话,9},{effectiveAgency,客户生效机构,10}
+	　　（6）主表的映射配置完毕后，关闭该窗口，然后点击主界面的【维护从表】按钮，进入从表维护界面。<br>
+	　　（7）点击从表维护界面的【添加】按钮，选择该从表对应的Person类的属性financing，然后输入该从表对应文件的路径(如/data/financing.txt)，外键下表为0(FK)，关系为一对多。<br>
+	　　　　按同样的方式添加纪录{deposit属性,deposit.txt}，{creditcardquota属性,creditcardquota.txt}，{family属性,family.txt}<br>
+	　　（8）然后选择某一条记录（如financing的记录），点击【维护从表映射关系】按钮，弹出从表映射关系窗口。<br>
+	　　（9）参考步骤（5）的方式(0不需录入，因为已做外键)，{balance,余额,1}。重复第8步和第9步完成deposit和creditCardQuota两条记录<br>
+	　　（10）参考步骤（8）和步骤（9），完成family对应记录的处理，区别在于family有两个属性要添加：{familyMemberLabel,关系人编号,1},{familyRelationsCode,关系代码,2}<br>
+	　　（11）按上面的步骤配置好所有的从表后，再返回主界面。<br>
+	　　（12）选择刚配置好的记录，然后点击启动按钮，启动转换操作，转换成功后，可以在hdfs文件管理对应的位置看到转换后的结果。<br>
+	<b>3、分析计算</b><br>
+	　　（1）进入【标签工厂->接口管理->计算管理】菜单，点击【添加】按钮，数据源路径填第2步产生的数据所在的路径。<br>
+	　　（2）然后选中新建的计算记录，点击【维护计算标签】按钮，进入维护计算标签界面，然后点击该界面的【添加】按钮。<br>
+	　　（3）选择【标签体系树->金融体系->人->关系属性->与团体关系->与次级团体关系->金融性关系->理财关系->理财余额->按余额确认客户层次】和<br>
+	　　　　　【标签体系树->金融体系->人->评估属性->价值评估->潜在价值->客户负债价值分析->信用卡余额分析->余额与资产比】两个标签计算规则。<br>
+	　　（4）返回主界面，选择刚新建的记录，再点击【启动】按钮，等待计算结束。<br>
+	<b>4、查看计算结果</b><br>
+	　　（1）点击主界面右上角的【展现中心】，进入到展现中心登陆界面，使用后台相同的账号密码登录展现中心。<br>
+	　　（2）点击【高级搜索】，进入高级搜索界面，选择和填入左侧两个树里的查询条件，点击搜索按钮，就可以查看计算结果。<br>
+	　　（3）点击查询结果的任意一条记录，进入该客户的详细记录查询界面，查看客户详细信息。<br>
+	</div>
+	</div>
+</body>
+</html>

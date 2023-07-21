@@ -1,0 +1,29 @@
+.node_header{height: 150px;margin-top: 20px;}
+.node_image{width: 125px;padding-top: 5px;float: left;text-align: center;margin-right: 35px;}
+.node_name{font-size: 28px;line-height: 28px;padding-bottom:12px;text-align: left;font-family:'Microsoft YaHei';color:#000000;padding-top:8px;}
+.node_info{margin-right: 30px;margin-top: 7px;text-align: left;color:#000000;}
+
+.info_block_title{height:36px;line-height:36px;text-align:left;font-size:20px;color:#000;font-family:'Microsoft YaHei';background:#FAFAFA}
+.info_block_title_span{background:#00A2CA;margin-right:10px;height:36px;padding-top:5px;padding-bottom:5px;}
+.info_block_introduce{text-align:left;margin-left:20px;padding-top:12px;padding-bottom:12px;}
+.base_info_block{text-align:left;}
+.base_info_item{border-bottom: dotted;border-bottom-width: 1px;color:#E0E0E0;height:30px;line-height:30px;padding-left:20px;}
+.base_info_item_name{font-weight:bold;color:#999999;width:110px;display:inline-block;letter-spacing:0px;text-align: left;}
+.base_info_item_value{color:#000000;width:270px;display:inline-block;text-align: left;}
+
+.tag_list{text-align:left;margin-left:20px;margin-right:20px;height:40px;padding-top:12px;line-height:25px;}
+.tag_list_item{background:#F0F0F0;padding:3px;}
+.tag_chart{text-align:left;margin-left:20px;border:dotted #00A2CA 1px;width:1046px;}
+
+.graph_tag_info{text-align:left;}
+.graph_tag_cloud{display:inline-block;margin:20px;border:dotted #00A2CA 1px;}
+.graph_tag_rela{display:inline-block;margin:20px;border:dotted #00A2CA 1px;}
+
+.product_item{margin-left:20px;margin-right:20px}
+.product_name{font-size: 18px;font-family:'Microsoft YaHei';text-align: left;line-height:30px;padding-top:10px;padding-bottom:5px;}
+.product_table{border:dotted #E0E0E0; border-width:1px 0px 0px 1px;width:100%}
+.product_head_td{border:dotted #E0E0E0;border-bottom:dotted #00A2CA; border-width:0px 1px 1px 0px; padding:3px;font-size:14px;height:25px;text-align:center;font-family:'Microsoft YaHei';}
+.product_td{border:dotted #E0E0E0; border-width:0px 1px 1px 0px; padding:3px;font-size:12px;height:20px;text-align:center}
+
+.report_list{font-size: 14px;text-align: left;margin-left:20px;height:30px;padding-top:10px;}
+.report_item{display:inline;text-decoration:none;text-align:center; padding:8px;border:dotted #00A2CA 1px;background: #FAFAFA;height:40px;}

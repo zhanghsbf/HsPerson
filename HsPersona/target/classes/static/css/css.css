@@ -1,0 +1,32 @@
+body{margin:0px;}
+*{font-size:12px;}
+form{margin:0;padding:0;}
+.info-td{text-align:right;}
+.easyui-window{text-align:center;background:#f1f6ff;}
+.easyui-window input,select,textarea{width:200px;border:1px solid #95B8E7;height:24px;padding-top:4px}
+.easyui-panel input,select,textarea{width:200px;border:1px solid #95B8E7;height:24px;padding-top:4px}
+.define_form input,select,textarea{width:200px;border:1px solid #95B8E7;height:24px;padding-top:4px}
+.easyui-datebox{width:200px;}
+.easyui-numberspinner{width:200px;}
+.easyui-combobox{width:200px;}
+.easyui-combotree{width:200px;}
+.btn{BORDER:#95B8E7 1px solid;
+    PADDING-TOP:2px;
+    PADDING-LEFT:2px;
+    PADDING-RIGHT:1px;
+    FONT-SIZE:12px;
+    /*FILTER:progid:DXImageTransform.Microsoft.Gradient(GradientType=0,StartColorStr=#ffffff,EndColorStr=#f1f6ff); */
+    CURSOR:hand;
+}
+
+.file_table tr td{height:26px;}
+.file_table{width:600px;margin-left:50px;margin-top:20px;margin-bottom:20px;}
+.file_td1{border-left:1px solid #95B8E7;border-right:1px solid #95B8E7;border-bottom:1px solid #95B8E7;}
+.file_td2{border-right:1px solid #95B8E7;border-bottom:1px solid #95B8E7;}
+
+.import_tbl{background:#95B8E7;}
+.import_tbl tr{height:24px;}
+.import_tbl tr td{text-align:center;background:#f1f6ff;}
+.main-div{width:100%;height:100%;}
+
+.btn-separator{border-left:1px solid #ccc;border-right:1px solid #fff;margin-right:5px;}

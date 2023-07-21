@@ -1,0 +1,744 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+<head>
+    <div th:include="common/header.html"/>
+<style>
+.left-div{width:530px;border-left:0px;border-top:0px;border-bottom:0px;}
+.layout-panel-west .panel-header{border-left:0px;border-top:0px;}
+.right-div{height:150px;border:0px;}
+.layout-panel-center .panel-header{border-left:0px;border-top:0px;border-right:0px;}
+
+.panel-title a:link{color:blue}
+.panel-title a:visited{color:blue;}
+.panel-title a:hover{color:blue;}
+.datagrid-cell a:hover{color:blue;}
+.datagrid-cell a:visited{color:blue;}
+.datagrid-cell a:hover{color:blue;}
+</style>
+</head>
+<body>
+	<div class="easyui-layout main-div">
+        <div region="west" class="left-div">
+            <table id="dg1" toolbar="#tb1"></table>
+		    <div id="tb1">
+		    	&nbsp;编码：<input id="typeCode" style="width:60px" />名称：<input id="typeName" style="width:60px" />
+		        <a href="#" onclick="doSearch()" class="easyui-linkbutton" iconCls="icon-search" plain="true">查询</a>
+		        <sys:permission code="editBaseModelMng">
+		        <a href="#" onclick="doAddBaseType()" class="easyui-linkbutton" iconCls="icon-add" plain="true">添加</a>
+		        <a href="#" onclick="doEditBaseType()" class="easyui-linkbutton" iconCls="icon-edit" plain="true">修改</a>
+		        <a href="#" onclick="doDeleteBaseType()" class="easyui-linkbutton" iconCls="icon-remove" plain="true">删除</a>
+		        <a href="#" onclick="doJsonLd()" class="easyui-linkbutton" iconCls="icon-code" plain="true">JSONLD</a>
+		        </sys:permission>
+		    </div>
+        </div>
+        <div region="center" class="right-div" >
+		    <table id="dg2" toolbar="#tb2"></table>
+		    <div id="tb2">
+		        <sys:permission code="editBaseModelMng">
+		        <a href="#" onclick="doAddBaseTypeField()" class="easyui-linkbutton" iconCls="icon-add" plain="true">添加</a>
+		        <a href="#" onclick="doEditBaseTypeField()" class="easyui-linkbutton" iconCls="icon-edit" plain="true">修改</a>
+		        <a href="#" onclick="doDeleteBaseTypeField()" class="easyui-linkbutton" iconCls="icon-remove" plain="true">删除</a>
+		        <a href="#" onclick="doEditExpress()" class="easyui-linkbutton" iconCls="icon-edit" plain="true">维护表述</a>
+		        </sys:permission>
+		        <a href="#" onclick="doViewExpress()" class="easyui-linkbutton" iconCls="icon-view" plain="true">查看表述</a>
+		    </div>
+        </div>
+    </div>	
+    <div id="w1" class="easyui-window" style="width:400;height:270;text-align:center;background:#f1f6ff" title="维护数据类型" modal="true">
+            <br>
+            <form method="post" id="actionForm1"> 
+                <input type="hidden" id="id" name="id" />
+                <input type="hidden" id="parentTypeId" name="parentTypeId" />
+                <table width=100%> 
+                    <tr> 
+                        <td class="info-td" width=25%>类型编码：</td> 
+                        <td><input type="text" id="code" name="code" />&nbsp;<font color=red>*</font></td> 
+                    </tr>
+                    <tr> 
+                        <td class="info-td" width=25%>类型名称：</td> 
+                        <td><input type="text" id="name" name="name" />&nbsp;<font color=red>*</font></td> 
+                    </tr>
+                    <tr> 
+                        <td class="info-td">父类类型编码：</td> 
+                        <td><input type="text" id="parentTypeCode" disabled /></td> 
+                    </tr>
+                    <tr> 
+                        <td class="info-td">是否首先显示：</td> 
+                        <td>
+                        	<select class="easyui-combobox" id="isFirstShow" name="isFirstShow" data-options="editable:false,panelHeight:'auto'">
+                            <option value=0>否</option>
+                            <option value=1>是</option>
+                            </select>
+                        </td> 
+                    </tr>
+                    <tr> 
+                        <td class="info-td">类型：</td> 
+                        <td>
+                        	<select class="easyui-combobox" id="type" name="type" data-options="editable:false,panelHeight:'auto'">
+                            <sys:option code="dataType" />
+                            </select>&nbsp;<font color=red>*</font>
+                        </td> 
+                    </tr>
+                    <tr> 
+                        <td class="info-td">备注：</td> 
+                        <td><input type="text" id="memo" name="memo" /></td> 
+                    </tr>
+                </table>
+                <br>
+                <a class="easyui-linkbutton" iconcls="icon-ok" href="javascript:void(0);" onclick="doSaveBaseType()">保存</a> 
+                <a class="easyui-linkbutton" iconcls="icon-cancel" href="javascript:void(0);" onclick="doCloseBaseType()">关闭</a> 
+            </form>
+            <br>
+    </div>
+    <div id="w2" class="easyui-window" style="width:400;height:335;text-align:center;background:#f1f6ff" title="维护数据类型属性" modal="true">
+            <br>
+            <form method="post" id="actionForm2"> 
+                <input type="hidden" id="id" name="id" />
+                <input type="hidden" id="belongBaseTypeId" name="belongBaseTypeId" />
+                <input type="hidden" id="selfBaseTypeId" name="selfBaseTypeId" />
+                <input type="hidden" id="dataTypeElementId" name="dataTypeElementId" />
+                <table width=100%> 
+                    <tr> 
+                        <td class="info-td" width=25%>属性编码：</td> 
+                        <td><input type="text" id="elementCode" readOnly onclick="doSelectElement()"/>&nbsp;<font color=red>*</font></td> 
+                    </tr>
+                    <tr> 
+                        <td class="info-td">属性名称：</td> 
+                        <td><input type="text" id="elementName" disabled /></td> 
+                    </tr>
+                    <tr> 
+                        <td class="info-td">属性类型：</td> 
+                        <td><input type="text" id="selfBaseTypeName" name="selfBaseTypeName" readOnly onclick="doSelectType()"/>&nbsp;<font color=red>*</font></td> 
+                    </tr>
+                    <tr> 
+                        <td class="info-td">长度：</td> 
+						<td><input type="text" id="typeLength" name="typeLength" /></td> 
+                    </tr>
+                    <tr> 
+                        <td class="info-td">精度：</td> 
+						<td><input type="text" id="typePrecision" name="typePrecision" /></td> 
+                    </tr>
+                    <tr> 
+                        <td class="info-td">是否列表：</td> 
+                        <td>
+                        	<select class="easyui-combobox" id="isArray" name="isArray" data-options="editable:false,panelHeight:'auto'">
+                            <option value=0>否</option>
+                            <option value=1>是</option>
+                            </select>
+                        </td> 
+                    </tr>
+                    <tr> 
+                        <td class="info-td">是否查询：</td> 
+                        <td>
+                        	<select class="easyui-combobox" id="isQuery" name="isQuery" data-options="editable:false,panelHeight:'auto'">
+                            <option value=0>否</option>
+                            <option value=1>是</option>
+                            </select>
+                        </td> 
+                    </tr>
+                    <tr> 
+                        <td class="info-td">备注：</td> 
+                        <td><input type="text" id="memo" name="memo" /></td> 
+                    </tr>
+                </table>
+                <br>
+                <a class="easyui-linkbutton" iconcls="icon-ok" href="javascript:void(0);" onclick="doSaveBaseTypeField()">保存</a> 
+                <a class="easyui-linkbutton" iconcls="icon-cancel" href="javascript:void(0);" onclick="doCloseBaseTypeField()">关闭</a> 
+            </form>
+            <br>
+    </div>
+    <div id="w3" class="easyui-window" style="width:700;height:450;text-align:center;background:#f1f6ff" title="选择数据类型" modal="true">
+        <table id="dg3" toolbar="#tb3"></table>
+	    <div id="tb3">
+	        &nbsp;编码：<input id="typeCodeSelect"/>
+	        <a href="#" onclick="doSearchSelectType()" class="easyui-linkbutton" iconCls="icon-search" plain="true">查询</a>
+	        <a href="#" onclick="doSureSelectType()" class="easyui-linkbutton" iconCls="icon-ok" plain="true">确定</a>
+	        <a href="#" onclick="doCloseSelectType()" class="easyui-linkbutton" iconCls="icon-cancel" plain="true">关闭</a>
+	    </div>
+    </div>
+    <div id="w4" class="easyui-window" style="width:700;height:450;text-align:center;background:#f1f6ff" title="选择模型属性" modal="true">
+        <table id="dg4" toolbar="#tb4"></table>
+	    <div id="tb4">
+	        &nbsp;编码：<input id="elementCodeSelect" style="width:120"/>
+	        &nbsp;名称：<input id="elementNameSelect" style="width:120"/>
+	        <a href="#" onclick="doSearchSelectElement()" class="easyui-linkbutton" iconCls="icon-search" plain="true">查询</a>
+	        <a href="#" onclick="doSureSelectElement()" class="easyui-linkbutton" iconCls="icon-ok" plain="true">确定</a>
+	        <a href="#" onclick="doCloseSelectElement()" class="easyui-linkbutton" iconCls="icon-cancel" plain="true">关闭</a>
+	    </div>
+    </div>
+    <div id="w5" class="easyui-window" style="width:700;height:350;text-align:center;background:#f1f6ff" title="基础模型属性表述（替换处用\${n}标记,n从0开始）" modal="true">
+        <table id="dg5" toolbar="#tb5"></table>
+	    <div id="tb5">
+	        <sys:permission code="editBaseModelMng">
+	        <a href="#" onclick="doAddBaseTypeFieldExpress()" class="easyui-linkbutton" iconCls="icon-add" plain="true">添加</a>
+	        <a href="#" onclick="doEditBaseTypeFieldExpress()" class="easyui-linkbutton" iconCls="icon-edit" plain="true">修改</a>
+	        <a href="#" onclick="doDeleteBaseTypeFieldExpress()" class="easyui-linkbutton" iconCls="icon-remove" plain="true">删除</a>
+	        </sys:permission>
+	    </div>
+    </div>
+    <div id="w6" class="easyui-window" style="width:350;height:255;text-align:center;background:#f1f6ff" title="维护数据类型属性表述" modal="true">
+            <br>
+            <form method="post" id="actionForm6"> 
+                <input type="hidden" id="id" name="id" />
+                <input type="hidden" id="fieldId" name="fieldId" />
+                <table width=100%> 
+                    <tr> 
+                        <td class="info-td">表述类型：</td> 
+                        <td>
+                        	<select class="easyui-combobox" id="type" name="type" data-options="editable:false,panelHeight:'auto'">
+                            <sys:option code="expressType"></sys:option>
+                            </select>&nbsp;<font color=red>*</font>
+                        </td> 
+                    </tr>
+                    <tr> 
+                        <td class="info-td">表述模版：</td> 
+                        <td><textarea id="express" name="express" style="height:100;"/></textarea>&nbsp;<font color=red>*</font></td> 
+                    </tr>
+                </table>
+                <br>
+                <a class="easyui-linkbutton" iconcls="icon-ok" href="javascript:void(0);" onclick="doSaveBaseTypeFieldExpress()">保存</a> 
+                <a class="easyui-linkbutton" iconcls="icon-cancel" href="javascript:void(0);" onclick="doCloseBaseTypeFieldExpress()">关闭</a> 
+            </form>
+            <br>
+    </div>
+    <script type="text/javascript" th:inline="none">
+    	var viewCode=[],viewId=[];
+        $(function () { 
+        	$('#w1').window('close');
+        	$('#w2').window('close');
+        	$('#w3').window('close');
+        	$('#w4').window('close');
+        	$('#w5').window('close');
+        	$('#w6').window('close');
+            $('#dg1').datagrid({
+            	url:"/tag/tagBaseModel/init",
+                rownumbers:true,
+                title:'基础模型数据类型',
+                border:false,
+                fit: true,
+                singleSelect:true,
+                pagination:true,
+                pageSize: 15,
+                pageList: [15,20,30],
+                beforePageText: '第',
+                afterPageText: '页    共 {pages} 页',  
+                displayMsg: '当前显示 {from} - {to} 条记录   共 {total} 条记录',
+                columns:[[
+                    {field:'code',title:'类编码',width:100,halign:'center',sortable:true},
+                    {field:'parentTypeCode',title:'父类',width:100,halign:'center',sortable:true},
+                    {field:'name',title:'类名称',width:100,halign:'center',sortable:true},
+                    {field:'typeName',title:'类类型',width:60,align:'center',sortable:true},
+                    {field:'isFirstShow',title:'首先显示',width:60,align:'center',sortable:true,formatter:isOrNo},
+                    {field:'memo',title:'类说明',width:170,halign:'center',sortable:true}
+                ]],
+                onClickRow:function(index,node){
+                	$("#dg2").datagrid('getPanel').panel('setTitle','基础模型数据类型属性（<font color=blue>'+node.code+'</font>）');
+                	viewCode=[node.code];
+                	viewId=[node.id];
+                	var param = {belongBaseTypeId : node.id};
+                    $("#dg2").datagrid("load", param);
+                }
+            });
+            $('#dg2').datagrid({
+            	url:"/tag/tagBaseModel/initField",
+                rownumbers:true,
+                title:'基础模型数据类型属性',
+                border:false,
+                fit: true,
+                singleSelect:true,
+                pagination:true,
+                pageSize: 15,
+                pageList: [15,20,30],
+                beforePageText: '第',
+                afterPageText: '页    共 {pages} 页',  
+                displayMsg: '当前显示 {from} - {to} 条记录   共 {total} 条记录',
+                columns:[[
+					{field:'dataTypeElementCode',title:'属性编码',width:180,halign:'center'},
+                    {field:'dataTypeElementName',title:'属性名称',width:120,halign:'center'},
+                    {field:'typeCode',title:'数据类型',width:140,align:'center'},
+                    {field:'typeLength',title:'长度',width:40,align:'center'},
+                    {field:'typePrecision',title:'精度',width:40,align:'center'},
+                    {field:'isQuery',title:'是否查询',width:60,align:'center',formatter:isOrNo},
+                    {field:'memo',title:'备注',width:300,halign:'center'}
+                ]]
+            });
+            $('#dg3').datagrid({
+                rownumbers:true,
+                border:false,
+                fit: true,
+                singleSelect:true,
+                pagination:true,
+                pageSize: 10,
+                pageList: [10,15,20],
+                beforePageText: '第',
+                afterPageText: '页    共 {pages} 页',  
+                displayMsg: '当前显示 {from} - {to} 条记录   共 {total} 条记录',
+                columns:[[
+                    {field:'code',title:'类编码',width:100,halign:'center',sortable:true},
+                    {field:'parentTypeCode',title:'父类',width:100,halign:'center',sortable:true},
+                    {field:'name',title:'类名称',width:100,halign:'center',sortable:true},
+                    {field:'typeName',title:'类类型',width:90,align:'center',sortable:true},
+                    {field:'memo',title:'类说明',width:170,halign:'center',sortable:true}
+                ]],
+                onDblClickRow:function(index,node){
+                	doSureSelectType();
+                }
+            });
+            $('#dg4').datagrid({
+                rownumbers:true,
+                border:false,
+                fit: true,
+                singleSelect:true,
+                pagination:true,
+                pageSize: 10,
+                pageList: [10,15,20],
+                beforePageText: '第',
+                afterPageText: '页    共 {pages} 页',  
+                displayMsg: '当前显示 {from} - {to} 条记录   共 {total} 条记录',
+                columns:[[
+                    {field:'code',title:'属性编码',width:130,halign:'center',sortable:true},
+                    {field:'name',title:'属性名称',width:130,halign:'center',sortable:true},
+                    {field:'memo',title:'属性说明',width:300,halign:'center',sortable:true}
+                ]],
+                onDblClickRow:function(index,node){
+                	doSureSelectElement();
+                }
+            });
+            $('#dg5').datagrid({
+                rownumbers:true,
+                border:false,
+                fit: true,
+                singleSelect:true,
+                pagination:true,
+                pageSize: 10,
+                pageList: [10,15,20],
+                beforePageText: '第',
+                afterPageText: '页    共 {pages} 页',  
+                displayMsg: '当前显示 {from} - {to} 条记录   共 {total} 条记录',
+                columns:[[
+                    {field:'typeName',title:'表述类型',width:100,align:'center',sortable:true},
+                    {field:'express',title:'表述模版',width:530,halign:'center',sortable:true}
+                ]]
+            });
+        });
+        /*
+         * 左侧数据模型的增删改查
+         */
+        function doAddBaseType(){
+        	$('#actionForm1').form('clear');
+        	var rows = $('#dg1').datagrid('getSelected');
+        	if(rows!=null){
+        		$('#parentTypeId',$('#actionForm1')).val(rows.id);
+        		$('#parentTypeCode',$('#actionForm1')).val(rows.code);
+            }else{
+            	$('#parentTypeId',$('#actionForm1')).val("-1");
+        		$('#parentTypeCode',$('#actionForm1')).val("顶级类型");
+            }
+        	$('#type',$('#actionForm1')).combobox('setValue',3);
+        	$('#isFirstShow',$('#actionForm1')).combobox('setValue',0);
+        	$('#w1').window({top:110});
+        	$('#w1').window('open');
+        }
+        function doEditBaseType(){
+        	var rows = $('#dg1').datagrid('getSelected');
+        	if(rows==null){
+        		$.messager.alert('提示','请选择需要修改的数据'); 
+                return;
+            }
+        	$('#actionForm1').form('clear');
+        	$('#id',$('#actionForm1')).val(rows.id);
+        	$('#parentTypeId',$('#actionForm1')).val(rows.parentTypeId);
+        	$('#code',$('#actionForm1')).val(rows.code);
+        	$('#name',$('#actionForm1')).val(rows.name);
+        	$('#parentTypeCode',$('#actionForm1')).val(rows.parentTypeCode);
+        	$('#type',$('#actionForm1')).combobox('setValue',rows.type);
+        	$('#isFirstShow',$('#actionForm1')).combobox('setValue',rows.isFirstShow);
+        	$('#memo',$('#actionForm1')).val(rows.memo);
+        	$('#w1').window({top:110});
+        	$('#w1').window('open');
+        }
+        function doDeleteBaseType(){
+        	var rows = $('#dg1').datagrid('getSelected');
+            if(rows==null){
+                $.messager.alert('提示','请选择需要删除的数据'); 
+                return;
+            }
+            $.messager.confirm('询问', '确定要删除该数据信息？', function(rtn){
+				if (rtn){
+                    $.ajax({  
+                        type: "POST",
+                        url:"/tag/tagBaseModel/delete",
+                        data: { id: rows.id},
+                        success: function (data) {
+                            var json=eval('('+data+')');  
+                            if(json.success==1){
+                                $.messager.alert('提示','删除数据成功');
+                                $('#dg1').datagrid('reload');
+                                $('#dg2').datagrid('reload');
+                            }else{
+                                $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+        function doSaveBaseType(){
+        	$('#actionForm1').form('submit',{
+                url:"/tag/tagBaseModel/save",
+                onSubmit: function(){
+                    if($('#code',$('#actionForm1')).val()==""){
+                        $.messager.alert('提示','类型编码不能为空');
+                        return false;
+                    }
+                    if(!isCode($('#code',$('#actionForm1')).val())){
+                    	$.messager.alert('提示','类型编码必须为英文字母开头，可包含数字，字母，下划线');
+                    	return false;
+                    }
+                    if($('#code',$('#actionForm1')).val().length>50){
+                    	$.messager.alert('提示','类型编码不能超过50个字符');
+                    	return false;
+                    }
+                    if(isPositiveInteger($('#name',$('#actionForm1')).val())){
+                    	$.messager.alert('提示','类型编码不能超过50个字符');
+                    	return false;
+                    }
+                },
+                success:function(data){
+                    var json=eval('('+data+')');  
+                    if(json.success==1){
+                    	$('#w1').window('close');
+                        $.messager.alert('提示','保存数据成功');
+                        $('#dg1').datagrid('reload');
+                        $("#dg2").datagrid("load", {belongBaseTypeId :"@"});
+                    }else{
+                        $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                    }
+                }   
+            });
+        }
+        function doCloseBaseType(){
+        	$('#w1').window('close');
+        }
+        function doSearch(){
+        	var param = {
+        		typeCode : $('#typeCode').val(),
+        		typeName : $('#typeName').val()
+        	};
+            $("#dg1").datagrid("load", param);
+        }
+        /*
+         * 右侧数据模型类型属性的增删改查
+         */
+        function doAddBaseTypeField(){
+        	var rows = $('#dg1').datagrid('getSelected');
+        	if(rows==null){
+        		$.messager.alert('提示','请先从左侧表格选择所属的数据模型类型'); 
+                return;
+            }
+        	$('#actionForm2').form('clear');
+        	$('#typePrecision',$('#actionForm2')).val(0);
+        	$('#belongBaseTypeId',$('#actionForm2')).val(rows.id);
+        	$('#isArray',$('#actionForm2')).combobox('setValue',0);
+        	$('#isQuery',$('#actionForm2')).combobox('setValue',0);
+        	$('#w2').window({top:110});
+        	$('#w2').window('open');
+        }
+		function doEditBaseTypeField(){
+			var rows = $('#dg2').datagrid('getSelected');
+        	if(rows==null){
+        		$.messager.alert('提示','请选择需要修改的数据'); 
+                return;
+            }
+        	$('#actionForm2').form('clear');
+        	$('#id',$('#actionForm2')).val(rows.id);
+        	$('#belongBaseTypeId',$('#actionForm2')).val(rows.belongTypeId);
+        	$('#selfBaseTypeId',$('#actionForm2')).val(rows.selfTypeId);
+        	$('#dataTypeElementId',$('#actionForm2')).val(rows.dataTypeElementId);
+        	$('#elementCode',$('#actionForm2')).val(rows.dataTypeElementCode);
+        	$('#elementName',$('#actionForm2')).val(rows.dataTypeElementName);
+        	$('#selfBaseTypeName',$('#actionForm2')).val(rows.selfBaseTypeCode);
+        	$('#typeLength',$('#actionForm2')).val(rows.typeLength);
+        	$('#typePrecision',$('#actionForm2')).val(rows.typePrecision);
+        	$('#isArray',$('#actionForm2')).combobox('setValue',rows.isArray);
+        	$('#isQuery',$('#actionForm2')).combobox('setValue',rows.isQuery);
+        	$('#memo',$('#actionForm2')).val(rows.memo);
+        	$('#w2').window({top:110});
+        	$('#w2').window('open');
+        }
+        function doDeleteBaseTypeField(){
+        	var rows = $('#dg2').datagrid('getSelected');
+            if(rows==null){
+                $.messager.alert('提示','请选择需要删除的数据'); 
+                return;
+            }
+            $.messager.confirm('询问', '确定要删除该数据信息？', function(rtn){
+				if (rtn){
+                    $.ajax({  
+                        type: "POST",
+                        url:"/tag/tagBaseModel/deleteField",
+                        data: { id: rows.id},
+                        success: function (data) {
+                            var json=eval('('+data+')');  
+                            if(json.success==1){
+                                $.messager.alert('提示','删除数据成功');
+                                $('#dg2').datagrid('reload');
+                            }else{
+                                $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+        function doSaveBaseTypeField(){
+        	$('#actionForm2').form('submit',{
+                url:"/tag/tagBaseModel/saveField",
+                onSubmit: function(){
+                    if($('#elementCode',$('#actionForm2')).val()==""){
+                        $.messager.alert('提示','属性编码不能为空');
+                        return false;
+                    }
+                    if($('#elementName',$('#actionForm2')).val()==""){
+                        $.messager.alert('提示','属性名称不能为空');
+                        return false;
+                    }
+                    if($('#selfBaseTypeName',$('#actionForm2')).val()==""){
+                        $.messager.alert('提示','属性类型不能为空');
+                        return false;
+                    }
+                    if(isNaN($('#typeLength',$('#actionForm2')).val()) || !isNoNegativeInteger($('#typeLength',$('#actionForm2')).val())){
+                    	$.messager.alert('提示','请输入正确的属性长度');
+                        return false;
+                    }
+                    if(isNaN($('#typePrecision',$('#actionForm2')).val())  || !isNoNegativeInteger($('#typePrecision',$('#actionForm2')).val())){
+                    	$.messager.alert('提示','请输入正确的属性精度');
+                        return false;
+                    }
+                },
+                success:function(data){
+                    var json=eval('('+data+')');  
+                    if(json.success==1){
+                    	$('#w2').window('close');
+                        $.messager.alert('提示','保存数据成功');
+                        $('#dg2').datagrid('reload');
+                    }else{
+                        $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                    }
+                }   
+            });
+        }
+        function doCloseBaseTypeField(){
+        	$('#w2').window('close');
+        }
+        /*
+         * 搜索数据类型窗口的操作
+         */
+        function doSelectType(){
+        	var url = "/tag/tagBaseModel/init";
+        	$("#dg3").datagrid("load", url);
+        	$('#w3').window({top:10});
+        	$('#w3').window('open');
+        }
+        function doSearchSelectType(){
+        	var param = {typeCode : $('#typeCodeSelect').val()};
+            $("#dg3").datagrid("load", param);
+        }
+        function doSureSelectType(){
+        	var rows = $('#dg3').datagrid('getSelected');
+            if(rows==null){
+                $.messager.alert('提示','请先选择数据'); 
+                return;
+            }
+        	$('#selfBaseTypeId',$('#actionForm2')).val(rows.id);
+        	$('#selfBaseTypeName',$('#actionForm2')).val(rows.code);
+        	$('#w3').window('close');
+        }
+        function doCloseSelectType(){
+        	$('#w3').window('close');
+        }
+       	/*
+       	 * 搜索模型属性窗口的操作
+       	 */
+       	function doSelectElement(){
+       		var url = "/tag/tagElement/init?enable=1";
+       		$('#elementCodeSelect').val("");
+       		$('#elementNameSelect').val("");
+       		$("#dg4").datagrid("load", url);
+        	$('#w4').window({top:10});
+        	$('#w4').window('open');
+       	}
+       	function doSearchSelectElement(){
+        	var param = {code : $('#elementCodeSelect').val(),name:$('#elementNameSelect').val()};
+            $("#dg4").datagrid("load", param);
+        }
+        function doSureSelectElement(){
+        	var rows = $('#dg4').datagrid('getSelected');
+            if(rows==null){
+                $.messager.alert('提示','请先选择数据'); 
+                return;
+            }
+        	$('#dataTypeElementId',$('#actionForm2')).val(rows.id);
+        	$('#elementCode',$('#actionForm2')).val(rows.code);
+        	$('#elementName',$('#actionForm2')).val(rows.name);
+        	$('#w4').window('close');
+        }
+        function doCloseSelectElement(){
+        	$('#w4').window('close');
+        }
+        function doDetail(id,code){
+        	//看是否存在，如果存在就回到存在的位置，否则就增加
+        	var haved = false;
+        	for(var i=0;i<viewCode.length;i++){
+        		if(viewCode[i]==code){
+        			viewCode.length=i+1;
+        			viewId.length=i+1;
+        			haved = true;
+        			break;
+        		}
+        	}
+        	if(!haved){
+            	viewCode[viewCode.length]=code;
+            	viewId[viewId.length]=id;
+        	}
+        	var html = ""
+        	if(viewId.length==1){
+        		html="<font color=blue>"+viewCode[i]+"</font>"
+        	}else{
+            	for(var i=0;i<viewCode.length;i++){
+            		html = html + " -> <font color=blue><a href='#' onclick=\"doDetail('"+viewId[i]+"','"+viewCode[i]+"')\">"+viewCode[i]+"</a></font>";
+            	}
+            	if(html.length>0){
+            		html = html.substring(4);
+            	}
+        	}
+        	$("#dg2").datagrid('getPanel').panel('setTitle','基础模型数据类型属性（'+html+'）');
+        	var param = {belongBaseTypeId : id};
+            $("#dg2").datagrid("load", param);
+        }
+        function doJsonLd(){
+        	var rows = $('#dg1').datagrid('getSelected');
+        	if(rows==null){
+        		$.messager.alert('提示','请选择需要生成JSON-LD文件的记录'); 
+                return;
+            }
+        	if(rows.type!=3){
+        		$.messager.alert('提示','只有复合类型的记录才能生成JSON-LD文件'); 
+                return;
+        	}
+        	$.messager.confirm('询问', '确定下载<font color=blue>'+rows.code+'</font>类型的JSONLD格式文件吗？', function(rtn){
+				if (rtn){
+		        	$('body').append("<iframe id=\"downloadIfr\" style=\"display:none\"></iframe>");
+					$('#downloadIfr').attr('src', "/tag/tagBaseModel/export?id="+rows.id);
+				}
+        	});
+        }
+        function doEditExpress(){
+        	var rows = $('#dg2').datagrid('getSelected');
+        	if(rows==null){
+        		$.messager.alert('提示','请选择需要维护表述的基础模型属性记录'); 
+              	return;
+            }
+        	var url = "/tag/tagBaseModel/initExpress?fieldId="+rows.id;
+            $("#dg5").datagrid("load", url );
+            $('#tb5').show();
+        	$('#w5').window({top:50});
+        	$('#w5').window('open');
+        }
+        function doViewExpress(){
+            var rows = $('#dg2').datagrid('getSelected');
+            if(rows==null){
+                $.messager.alert('提示','请选择需要维护表述的基础模型属性记录');
+                return;
+            }
+            var url = "/tag/tagBaseModel/initExpress?fieldId="+rows.id;
+            $("#dg5").datagrid("load", url );
+            $('#tb5').hide();
+            $('#w5').window({top:50});
+            $('#w5').window('open');
+        }
+        function doAddBaseTypeFieldExpress(){
+        	var rows = $('#dg2').datagrid('getSelected');
+        	if(rows==null){
+        		$.messager.alert('提示','没有选中需要增加表述的基础模型属性'); 
+              	return;
+            }
+        	$('#actionForm6').form('clear');
+       		$('#fieldId',$('#actionForm6')).val(rows.id);
+        	$('#w6').window({top:110});
+        	$('#w6').window('open');
+        }
+        function doEditBaseTypeFieldExpress(){
+        	var rows = $('#dg2').datagrid('getSelected');
+        	if(rows==null){
+        		$.messager.alert('提示','没有选中需要增加表述的基础模型属性'); 
+              	return;
+            }
+        	var rows5 = $('#dg5').datagrid('getSelected');
+        	if(rows5==null){
+        		$.messager.alert('提示','请选择需要修改的基础模型属性表述'); 
+              	return;
+            }
+        	$('#actionForm6').form('clear');
+       		$('#fieldId',$('#actionForm6')).val(rows.id);
+       		$('#id',$('#actionForm6')).val(rows5.id);
+       		$('#express',$('#actionForm6')).val(rows5.express);
+       		$('#type',$('#actionForm6')).combobox('setValue',rows5.type);
+        	$('#w6').window({top:110});
+        	$('#w6').window('open');
+        }
+        function doDeleteBaseTypeFieldExpress(){
+        	var rows = $('#dg5').datagrid('getSelected');
+        	if(rows==null){
+        		$.messager.alert('提示','请选择需要删除的基础模型属性表述记录'); 
+              	return;
+            }
+        	$.messager.confirm('询问', '确定要删除该数据信息？', function(rtn){
+				if (rtn){
+                    $.ajax({  
+                        type: "POST",
+                        url:"/tag/tagBaseModel/deleteExpress",
+                        data: { id: rows.id},
+                        success: function (data) {
+                            var json=eval('('+data+')');  
+                            if(json.success==1){
+                                $.messager.alert('提示','删除数据成功');
+                                $('#dg5').datagrid('reload');
+                            }else{
+                                $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+        function doSaveBaseTypeFieldExpress(){
+        	$('#actionForm6').form('submit',{
+                url:"/tag/tagBaseModel/saveExpress",
+                onSubmit: function(){
+                    if($('#type',$('#actionForm6')).combobox('getValue')==""){
+                        $.messager.alert('提示','表述类型不能为空');
+                        return false;
+                    }
+                    if($('#express',$('#actionForm6')).val()==""){
+                        $.messager.alert('提示','表述模版不能为空');
+                        return false;
+                    }
+                },
+                success:function(data){
+                    var json=eval('('+data+')');  
+                    if(json.success==1){
+                    	$('#w6').window('close');
+                        $.messager.alert('提示','保存数据成功');
+                        $('#dg5').datagrid('reload');
+                    }else{
+                        $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                    }
+                }   
+            });
+        }
+        function doCloseBaseTypeFieldExpress(){
+        	$('#w6').window('close');
+        }
+    </script>
+</body>

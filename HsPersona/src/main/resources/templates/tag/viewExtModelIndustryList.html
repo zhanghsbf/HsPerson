@@ -1,0 +1,26 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+<body>
+<div th:include="common/header.html"/>
+    <table id="dg"></table>
+    <script type="text/javascript" th:inline="none">
+        $(function () { 
+            $('#dg').datagrid({
+                url:"/tag/tagExtModel/initList",
+                rownumbers:true,
+                title:'行业模型列表（双击查看）',
+                border:false,
+                fit: true,
+                singleSelect:true,
+                columns:[[
+                    {field:'itemValue',title:'行业编号',width:100,align:'center',sortable:true},
+                    {field:'itemName',title:'行业名称',width:300,align:'center',sortable:true},
+                    {field:'num',title:'对象类个数',width:100,align:'center'}
+                ]],
+                onDblClickRow:function(index,node){
+                	location.href="/tag/tagExtModel/modelWeb?industryValue="+node.itemValue;
+                }
+            });
+        });
+	</script>
+</body>

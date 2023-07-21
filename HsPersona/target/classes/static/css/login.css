@@ -1,0 +1,45 @@
+.btnClass{
+    width:80px;
+    height:35px;
+    cursor:pointer;
+    padding-top:3px;
+    font-size:14px;
+	font-family:'Microsoft YaHei';
+}
+body{
+    text-align:center;
+    margin:0px auto;
+    background-color:#384186;
+}
+.labelClass{
+	font-size:14px;
+	font-family:'Microsoft YaHei';
+}
+.txtClass{
+    width:180px; 
+    height:30px;
+}
+.left-img-div{
+    width:700px;
+    height:450px;
+    background-image:url(../images/loginleft.jpg);
+}
+.right-img-div{
+    width:290;
+    height:100px;
+    background-image:url(../images/loginright.jpg);
+}
+.title-td{
+	font-family:'Microsoft YaHei';
+	font-size:16px;
+	padding-left:10px;
+    background-color:#ededed;
+}
+.version-td{
+    background-color:#ededed;
+	text-align:right;
+	padding-right:10px;
+}
+.form-td{
+    background-color:#ededed;
+}

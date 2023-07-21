@@ -1,0 +1,47 @@
+	<div id="w1" class="easyui-window" style="width:950;height:480;" title="维护公式" modal="true">
+		<table id="dg1"></table>
+	</div>
+	<div id="w2" class="easyui-window" style="width:950;height:480;" title="维护表达式" modal="true">
+		<table id="dg2"></table>
+	</div>
+	<div id="menuPpt" class="easyui-menu" style="display:none;">
+	</div>
+	<div id="menuFunc" class="easyui-menu" style="display:none;">
+	    <div data-options="iconCls:'icon-code'" onclick="doAddGroup(this)">sum</div>
+	    <div data-options="iconCls:'icon-code'" onclick="doAddGroup(this)">avg</div>
+	    <div data-options="iconCls:'icon-code'" onclick="doAddGroup(this)">count</div>
+	    <div data-options="iconCls:'icon-code'" onclick="doAddCifGroup(this)">countif</div>
+	</div>
+	<div id="menuOpt" class="easyui-menu" style="display:none;">
+	    <div data-options="iconCls:'icon-code'" onclick="doAddOperate(0,0)">加</div>
+	    <div data-options="iconCls:'icon-code'" onclick="doAddOperate(1,0)">减</div>
+	    <div data-options="iconCls:'icon-code'" onclick="doAddOperate(1,1)">反减</div>
+	    <div data-options="iconCls:'icon-code'" onclick="doAddOperate(2,0)">乘</div>
+	    <div data-options="iconCls:'icon-code'" onclick="doAddOperate(3,0)">除</div>
+	    <div data-options="iconCls:'icon-code'" onclick="doAddOperate(3,1)">反除</div>
+	    <div data-options="iconCls:'icon-code'" onclick="doAddSifOperate(this)">sumif</div>
+	</div>
+	<div id="menuExpress" class="easyui-menu" style="display:none;">
+	    <div data-options="iconCls:'icon-code'" id=expressLeftDiv>逻辑式左侧</div>
+	    <div class="menu-sep"></div>
+	    <div data-options="iconCls:'icon-code'">
+	    	<span>逻辑操作</span>
+	    	<div>
+	    		<div data-options="iconCls:'icon-code'" onclick="doExpressOpt(this)">></div>
+	    		<div data-options="iconCls:'icon-code'" onclick="doExpressOpt(this)">>=</div>
+	    		<div data-options="iconCls:'icon-code'" onclick="doExpressOpt(this)"><</div>
+	    		<div data-options="iconCls:'icon-code'" onclick="doExpressOpt(this)"><=</div>
+	    		<div data-options="iconCls:'icon-code'" onclick="doExpressOpt(this)">=</div>
+	    		<div data-options="iconCls:'icon-code'" onclick="doExpressOpt(this)">!=</div>
+	    		<div data-options="iconCls:'icon-code'" onclick="doExpressOpt(this)">like</div>
+	    	</div>
+	    </div>
+	    <div class="menu-sep"></div>
+	    <div data-options="iconCls:'icon-code'" onclick="doExpressRight()">逻辑式右侧</div>
+	    <div class="menu-sep"></div>
+	    <div data-options="iconCls:'icon-code'" onclick="doAddToFormula()">添加至公式</div>
+	</div>
+	<div id="menuLogic" class="easyui-menu" style="display:none;">
+	    <div data-options="iconCls:'icon-code'" onclick="doExpressLogic(this)">and</div>
+	    <div data-options="iconCls:'icon-code'" onclick="doExpressLogic(this)">or</div>
+	</div>

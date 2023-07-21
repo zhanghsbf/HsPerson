@@ -1,0 +1,448 @@
+﻿<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+<head>
+    <style>
+        .main-div {
+            width: 100%;
+            height: 100%;
+        }
+
+        .layout-panel-west .panel-header {
+            border-left: 0px;
+            border-top: 0px;
+        }
+
+        .left-div {
+            width: 240px;
+            border-left: 0px;
+            border-top: 0px;
+            border-bottom: 0px;
+        }
+
+        .layout-panel-center .panel-header {
+            border-left: 0px;
+            border-top: 0px;
+            border-right: 0px;
+        }
+
+        .layout-panel-center .panel-body {
+            border-bottom: 0px;
+            border-top: 0px;
+            border-right: 0px;
+        }
+
+        .datagrid-cell-check input {
+            width: 15px;
+            height: 15px;
+        }
+    </style>
+</head>
+<body>
+<div th:include="common/header.html"/>
+<div id="cc" class="easyui-layout main-div">
+    <div region="west" class="left-div" title="系统机构树">
+        <ul id="tt"></ul>
+    </div>
+    <div region="center">
+        <table id="dg" toolbar="#tb"></table>
+    </div>
+</div>
+<div id="tb">
+    <sys:permission code="editUser">
+        <a href="#" onclick="doAdd()" class="easyui-linkbutton" iconCls="icon-add" plain="true">添加</a>
+        <a href="#" onclick="doEdit()" class="easyui-linkbutton" iconCls="icon-edit" plain="true">修改</a>
+        <a href="#" onclick="doDelete()" class="easyui-linkbutton" iconCls="icon-remove" plain="true">删除</a>
+        <a href="#" onclick="doRole()" class="easyui-linkbutton" iconCls="icon-key" plain="true">授权</a>
+        <a href="#" onclick="doBan()" class="easyui-linkbutton" iconCls="icon-ban" plain="true">启禁</a>
+        <a href="#" onclick="doReset()" class="easyui-linkbutton" iconCls="icon-reload" plain="true">重置密码</a>
+        <a href="#" onclick="doIndustry()" class="easyui-linkbutton" iconCls="icon-submitAudit" plain="true">分配行业</a>
+    </sys:permission>
+    <a href="#" onclick="doViewIndustry()" class="easyui-linkbutton" iconCls="icon-view" plain="true">查看行业</a>
+    <a href="#" onclick="doViewRole()" class="easyui-linkbutton" iconCls="icon-view" plain="true">查看权限</a>
+</div>
+<div id="w" class="easyui-window" style="width:350;height:190;" title="维护用户" modal="true">
+    <br>
+    <form method="post" id="actionForm">
+        <input type="hidden" id="id" name="id"/>
+        <input type="hidden" id="orgId" name="orgId"/>
+        <table>
+            <tr>
+                <td class="info-td">所属机构：</td>
+                <td><input type="text" id="orgName" name="orgName" disabled/></td>
+            </tr>
+            <tr>
+                <td class="info-td">用户名：</td>
+                <td><input type="text" id="name" name="name"/>&nbsp;<font color=red>*</font></td>
+            </tr>
+            <tr>
+                <td class="info-td">姓名：</td>
+                <td><input type="text" id="realName" name="realName"/>&nbsp;<font color=red>*</font></td>
+            </tr>
+        </table>
+        <br>
+        <a class="easyui-linkbutton" iconcls="icon-ok" href="javascript:void(0)" onclick="doSave()">保存</a>
+        <a class="easyui-linkbutton" iconcls="icon-cancel" href="javascript:void(0)" onclick="doClose()">关闭</a>
+    </form>
+    <br>
+</div>
+<div id="sw" class="easyui-window" style="width:230;height:350" title="用户授权" modal="true">
+    <table id="sdg"></table>
+</div>
+<div id="iw" class="easyui-window" style="width:230;height:350" title="用户分配行业" modal="true">
+    <table id="idg"></table>
+</div>
+<script type="text/javascript" th:inline="none">
+    $(function () {
+        $('#w').window('close');
+        $('#sw').window('close');
+        $('#iw').window('close');
+        $('#tt').tree({
+            lines: true,
+            url: "/system/org/tree",
+            width: 240,
+            lines: true,
+            onClick: function (node) {
+                var param = {orgId: node.id};
+                $("#dg").datagrid("load", param);
+            }
+        });
+        $('#dg').datagrid({
+            url: "/system/user/init",
+            rownumbers: true,
+            title: '用户列表',
+            border: false,
+            fit: true,
+            singleSelect: true,
+            pagination: true,
+            pageSize: 15,
+            pageList: [15, 20, 30],
+            beforePageText: '第',
+            afterPageText: '页    共 {pages} 页',
+            displayMsg: '当前显示 {from} - {to} 条记录   共 {total} 条记录',
+            columns: [[
+                {field: 'id', hidden: true},
+                {field: 'name', title: '用户名', width: 120, align: 'center', sortable: true},
+                {field: 'realName', title: '姓名', width: 120, align: 'center', sortable: true},
+                {field: 'orgName', title: '所属机构', width: 150, align: 'center', sortable: true},
+                {field: 'createDate', title: '创建时间', width: 150, align: 'center', sortable: true, formatter: times},
+                {field: 'enable', title: '状态', width: 100, align: 'center', sortable: true, formatter: status}
+            ]]
+        });
+        $('#sdg').datagrid({
+            url: "/system/role/userRole",
+            border: false,
+            rownumbers: true,
+            fit: true,
+            queryParams: {userId: ''},
+            toolbar: ['-',
+                {text: '保存', iconCls: 'icon-save', id: 'roleBtn', handler: doSaveRole}
+            ],
+            columns: [[
+                {field: 'checked', checkbox: true},
+                {field: 'name', title: '角色名称', width: 150, align: 'center'}
+            ]],
+            onLoadSuccess: function (data) {
+                if (data) {
+                    $.each(data.rows, function (index, item) {
+                        if (item.checked) {
+                            $('#sdg').datagrid('checkRow', index);
+                        }
+                    });
+                }
+            }
+        });
+        $('#idg').datagrid({
+            url: "/system/dictionary/init?wwtype=industryType&rows=999999",
+            border: false,
+            rownumbers: true,
+            fit: true,
+            queryParams: {userId: ''},
+            toolbar: ['-',
+                {text: '保存', iconCls: 'icon-save', id: 'industryBtn', handler: doSaveIndustry}
+            ],
+            columns: [[
+                {field: 'checked', title: 'ddd' , checkbox: true},
+                {field: 'itemName', title: '行业名称', width: 150, align: 'center'}
+            ]],
+            selectOnCheck: true,
+            checkOnSelect: true
+        });
+    });
+
+    function status(value) {
+        return (value == 0) ? "<font color='red'>禁用</font>" : "<font color='green'>启用</font>";
+    }
+
+    function doAdd() {
+        var node = $('#tt').tree('getSelected');
+        if (node == null) {
+            $.messager.alert('提示', '请选择添加用户的机构');
+            return;
+        }
+        if (node.id == '-1') {
+            $.messager.alert('提示', '根节点机构为虚拟节点，不能为其建立用户数据');
+            return;
+        }
+        $('#name').attr('disabled', false);
+        $('#actionForm').form('clear');
+        $('#orgId').val(node.id);
+        $('#orgName').val(node.text);
+        $('#w').window({top: 150});
+        $('#w').window('open');
+    }
+
+    function doEdit() {
+        var rows = $('#dg').datagrid('getSelected');
+        if (rows == null) {
+            $.messager.alert('提示', '请选择需要修改的数据');
+            return;
+        }
+        $('#name').attr('disabled', true);
+        $.ajaxSetup({cache: false});
+        $('#actionForm').form('load',"/system/user/edit?id=" + rows.id);
+        $('#w').window({top: 150});
+        $('#w').window('open');
+    }
+
+    function doClose() {
+        $('#w').window('close');
+        $('#cw').window('close');
+    }
+
+    function doSave() {
+        $('#actionForm').form('submit', {
+            url: "/system/user/save",
+            onSubmit: function () {
+                if ($('#id').value == "" && $('#name').val() == "") {
+                    $.messager.alert('提示', '用户的用户名不能为空');
+                    return false;
+                }
+                if ($('#realName').val() == "") {
+                    $.messager.alert('提示', '用户的姓名不能为空');
+                    return false;
+                }
+            },
+            success: function (data) {
+                var json = eval('(' + data + ')');
+                if (json.success == 1) {
+                    $('#w').window('close');
+                    $.messager.alert('提示', '保存用户数据成功，新建用户处于禁用用状态');
+                    $('#dg').datagrid('load');
+                } else {
+                    $.messager.alert('提示', '数据提交处理失败，原因：' + json.info);
+                }
+            }
+        });
+    }
+
+    function doBan() {
+        var rows = $('#dg').datagrid('getSelected');
+        if (rows == null) {
+            $.messager.alert('提示', '请选择需要修改启禁状态的用户');
+            return;
+        }
+        $.messager.confirm('询问', '确定要修改该用户的启禁状态？', function (rtn) {
+            if (rtn) {
+                $.ajax({
+                    type: "POST",
+                    url: "/system/user/ban",
+                    data: {userId: rows.id},
+                    success: function (data) {
+                        var json = eval('(' + data + ')');
+                        if (json.success == 1) {
+                            $.messager.alert('提示', '修改用户的启禁状态成功');
+                            $('#dg').datagrid('load');
+                        } else {
+                            $.messager.alert('提示', '数据提交处理失败，原因：' + json.info);
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    function doReset() {
+        var rows = $('#dg').datagrid('getSelected');
+        if (rows == null) {
+            $.messager.alert('提示', '请选择需要重置密码的用户');
+            return;
+        }
+        $.messager.confirm('询问', '确定要重置该用户的密码？', function (rtn) {
+            if (rtn) {
+                $.ajax({
+                    type: "POST",
+                    url: "/system/user/reset",
+                    data: {userId: rows.id},
+                    success: function (data) {
+                        var json = eval('(' + data + ')');
+                        if (json.success == 1) {
+                            $.messager.alert('提示', '重置密码成功');
+                        } else {
+                            $.messager.alert('提示', '数据提交处理失败，原因：' + json.info);
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    function doRole() {
+        var rows = $('#dg').datagrid('getSelected');
+        if (rows == null) {
+            $.messager.alert('提示', '请选择需要授权的用户');
+            return;
+        }
+        var param = {userId: rows.id};
+        $("#sdg").datagrid("load", param);
+        $('#roleBtn').linkbutton("enable");
+        $('#sw').window({top: 100});
+        $('#sw').window('open');
+    }
+
+    function doSaveRole() {
+        var checkedItems = $('#sdg').datagrid('getChecked');
+        var ids = [], change = false;
+        $.each(checkedItems, function (index, item) {
+            ids.push(item.id);
+        });
+        var rows = $('#dg').datagrid('getSelected');
+        if (rows == null) {
+            $.messager.alert('提示', '需要授权的用户已处于未选择状态，请重新选择');
+            return;
+        }
+        $.ajax({
+            type: "POST",
+            url: "/system/user/assign",
+            data: {ids: ids.join(","), userId: rows.id},
+            success: function (data) {
+                var json = eval('(' + data + ')');
+                if (json.success == 1) {
+                    $('#sw').window('close');
+                    $.messager.alert('提示', '授权用户角色操作成功');
+                } else {
+                    $.messager.alert('提示', '数据提交处理失败，原因：' + json.info);
+                }
+            }
+        });
+    }
+
+    function doDelete() {
+        var rows = $('#dg').datagrid('getSelected');
+        if (rows == null) {
+            $.messager.alert('提示', '请选择需要删除的用户');
+            return;
+        }
+        $.messager.confirm('询问', '确定要删除该用户？', function (rtn) {
+            if (rtn) {
+                $.ajax({
+                    type: "POST",
+                    url: "/system/user/delete",
+                    data: {userId: rows.id},
+                    success: function (data) {
+                        var json = eval('(' + data + ')');
+                        if (json.success == 1) {
+                            $.messager.alert('提示', '删除用户成功');
+                            $('#dg').datagrid('reload');
+                        } else {
+                            $.messager.alert('提示', '数据提交处理失败，原因：' + json.info);
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    function doViewRole() {
+        var rows = $('#dg').datagrid('getSelected');
+        if (rows == null) {
+            $.messager.alert('提示', '请选择需要查看授权的用户');
+            return;
+        }
+        var param = {userId: rows.id};
+        $("#sdg").datagrid("load", param);
+        $('#roleBtn').linkbutton("disable");
+        $('#sw').window({top: 100});
+        $('#sw').window('open');
+    }
+
+    function doIndustry() {
+        var rows = $('#dg').datagrid('getSelected');
+        if (rows == null) {
+            $.messager.alert('提示', '请选择需要分配行业的用户');
+            return;
+        }
+        var idgrow = $('#idg').datagrid('getRows');
+        for (var i = 0; i < idgrow.length; i++) {
+            $('#idg').datagrid('unselectRow', i);
+        }
+        if (rows.industrytypes != null && rows.industrytypes != "") {
+            var industryValues = rows.industrytypes.split(",");
+            for (var i = 0; i < idgrow.length; i++) {
+                for (var j = 0; j < industryValues.length; j++) {
+                    if (idgrow[i].itemValue == industryValues[j]) {
+                        $('#idg').datagrid('selectRow', i);
+                        break;
+                    }
+                }
+            }
+        }
+        $('#industryBtn').linkbutton("enable");
+        $('#iw').window({top: 100});
+        $('#iw').window('open');
+    }
+
+    function doSaveIndustry() {
+        var checkedItems = $('#idg').datagrid('getChecked');
+        var ids = [], change = false;
+        $.each(checkedItems, function (index, item) {
+            ids.push(item.itemValue);
+        });
+        var rows = $('#dg').datagrid('getSelected');
+        if (rows == null) {
+            $.messager.alert('提示', '需要分配行业的用户已处于未选择状态，请重新选择');
+            return;
+        }
+        $.ajax({
+            type: "POST",
+            url: "/system/user/industry",
+            data: {ids: ids.join(","), userId: rows.id},
+            success: function (data) {
+                var json = eval('(' + data + ')');
+                if (json.success == 1) {
+                    $('#dg').datagrid('reload');
+                    $('#iw').window('close');
+                    $.messager.alert('提示', '分配行业操作成功');
+                } else {
+                    $.messager.alert('提示', '数据提交处理失败，原因：' + json.info);
+                }
+            }
+        });
+    }
+
+    function doViewIndustry() {
+        var rows = $('#dg').datagrid('getSelected');
+        if (rows == null) {
+            $.messager.alert('提示', '请选择需要查看行业的用户');
+            return;
+        }
+        var idgrow = $('#idg').datagrid('getRows');
+        for (var i = 0; i < idgrow.length; i++) {
+            $('#idg').datagrid('unselectRow', i);
+        }
+        if (rows.industrytypes != null && rows.industrytypes != "") {
+            var industryValues = rows.industrytypes.split(",");
+            for (var i = 0; i < idgrow.length; i++) {
+                for (var j = 0; j < industryValues.length; j++) {
+                    if (idgrow[i].itemValue == industryValues[j]) {
+                        $('#idg').datagrid('selectRow', i);
+                        break;
+                    }
+                }
+            }
+        }
+        $('#industryBtn').linkbutton("disable");
+        $('#iw').window({top: 100});
+        $('#iw').window('open');
+    }
+</script>
+</body>

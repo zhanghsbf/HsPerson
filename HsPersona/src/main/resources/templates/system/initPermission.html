@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+<head>
+    <style>
+        .main-div {
+            width: 100%;
+            height: 100%;
+        }
+
+        .layout-panel-west .panel-header {
+            border-left: 0px;
+            border-top: 0px;
+        }
+
+        .left-div {
+            width: 240px;
+            border-left: 0px;
+            border-top: 0px;
+            border-bottom: 0px;
+        }
+
+        .layout-panel-center .panel-header {
+            border-left: 0px;
+            border-top: 0px;
+            border-right: 0px;
+        }
+
+        .layout-panel-center .panel-body {
+            border-bottom: 0px;
+            border-top: 0px;
+            border-right: 0px;
+        }
+    </style>
+</head>
+<body>
+<div th:include="common/header.html"/>
+<div id="cc" class="easyui-layout main-div" style="height: 100%">
+    <div region="west" class="left-div" title="系统菜单树">
+        <ul id="tt"></ul>
+    </div>
+    <div region="center" class="rigth-div">
+        <table id="dg" toolbar="#tb"></table>
+    </div>
+</div>
+<div id="tb">
+    <sys:permission code="editPermission">
+        <a href="#" onclick="doAdd()" class="easyui-linkbutton" iconCls="icon-add" plain="true">添加</a>
+        <a href="#" onclick="doEdit()" class="easyui-linkbutton" iconCls="icon-edit" plain="true">修改</a>
+        <a href="#" onclick="doDelete()" class="easyui-linkbutton" iconCls="icon-remove" plain="true">删除</a>
+    </sys:permission>
+</div>
+<div id="w" class="easyui-window" style="width:350;height:170;" title="维护权限点" modal="true">
+    <br>
+    <form method="post" id="actionForm">
+        <input type="hidden" name="id"/>
+        <input type="hidden" name="menuId"/>
+        <table width=100%>
+            <tr>
+                <td class="info-td" width=28%>权限点代码：</td>
+                <td><input type="text" name="code"/>&nbsp;<font color=red>*</font></td>
+            </tr>
+            <tr>
+                <td class="info-td">权限点说明：</td>
+                <td><input type="text" name="memo"/></td>
+            </tr>
+        </table>
+        <br>
+        <a class="easyui-linkbutton" iconcls="icon-ok" href="javascript:void(0)" onclick="doSave()">保存</a>
+        <a class="easyui-linkbutton" iconcls="icon-cancel" href="javascript:void(0)" onclick="doClose()">关闭</a>
+    </form>
+    <br>
+</div>
+<script type="text/javascript" th:inline="none">
+    $(function () {
+        $('#w').window('close');
+        $('#tt').tree({
+            url: "/system/menu/tree",
+            lines: true,
+            width: 240
+        });
+        $('#dg').datagrid({
+            url: "/system/permission/init",
+            rownumbers: true,
+            title: '权限点列表',
+            border: false,
+            fit: true,
+            singleSelect: true,
+            queryParams: {
+                menuId: '-1'
+            },
+            columns: [[
+                {field: 'id', hidden: true},
+                {field: 'code', title: '代码', width: 180, sortable: true},
+                {field: 'treeCode', title: '树结构编码', width: 200, sortable: true},
+                {field: 'memo', title: '说明', width: 240, sortable: true}
+            ]]
+        });
+        $("#tt").tree({
+            lines: true,
+            onClick: function (node) {
+                var param = {menuId: node.id};
+                $("#dg").datagrid("load", param);
+            }
+        });
+    });
+
+    function doAdd() {
+        var node = $('#tt').tree('getSelected');
+        if (node == null) {
+            $.messager.alert('提示', '请选择需要增加权限点的菜单');
+            return;
+        }
+        if (!$('#tt').tree('isLeaf', node.target)) {
+            $.messager.alert('提示', '选中的菜单为非叶子菜单，不能增加权限点');
+            return;
+        }
+        $('#actionForm').form('clear');
+        $('input[name=menuId]').attr('value', node.id);
+        $('#w').window('open');
+    }
+
+    function doDelete() {
+        var rows = $('#dg').datagrid('getSelected');
+        if (rows == null) {
+            $.messager.alert('提示', '请选择需要删除的权限点');
+            return;
+        }
+        $.messager.confirm('询问', '您确认删除该权限点？', function (rtn) {
+            if (rtn) {
+                $.ajax({
+                    type: "POST",
+                    url: "/system/permission/delete",
+                    data: {permissionId: rows.id},
+                    success: function (data) {
+                        var json = eval('(' + data + ')');
+                        if (json.success == 1) {
+                            $.messager.alert('提示', '删除权限点成功');
+                            $('#dg').datagrid('load');
+                        } else {
+                            $.messager.alert('提示', '数据提交处理失败，原因：' + json.info);
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    function doEdit() {
+        var rows = $('#dg').datagrid('getSelected');
+        if (rows == null) {
+            $.messager.alert('提示', '请选择需要修改的数据');
+            return;
+        }
+        $.ajaxSetup({cache: false});
+        $('#actionForm').form('load', "/system/permission/edit?id=" + rows.id);
+        $('#w').window('open');
+    }
+
+    function doSave() {
+        $('#actionForm').form('submit', {
+            url: "/system/permission/save",
+            onSubmit: function () {
+                if ($('input[name=code]').val() == "") {
+                    $.messager.alert('提示', '权限点代码不能为空');
+                    return false;
+                }
+            },
+            success: function (data) {
+                var json = eval('(' + data + ')');
+                if (json.success == 1) {
+                    $('#w').window('close');
+                    $.messager.alert('提示', '保存权限点数据成功');
+                    $('#dg').datagrid('load');
+                } else {
+                    $.messager.alert('提示', '数据提交处理失败，原因：' + json.info);
+                }
+            }
+        });
+    }
+
+    function doClose() {
+        $('#w').window('close');
+    }
+</script>
+<script type="text/javascript">
+    $(window).load(function(){
+        $('#cc').layout('resize',{
+            height: $(window).height()
+        });
+    })
+</script>
+</body>
+</html>

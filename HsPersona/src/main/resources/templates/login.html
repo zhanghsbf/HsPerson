@@ -1,0 +1,60 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+<head>
+    <meta charset="UTF-8">
+    <title>系统登录</title>
+    <script src="/script/jquery-2.1.1.min.js" ></script>
+    <link rel="stylesheet" type="text/css" href='/css/login.css'>
+</head>
+<body style="width:1000px;">
+<!--<div th:include="common/webHeader.html"/>-->
+<div style="height:100px"></div>
+<table height=450 width=1000 border=0>
+    <tr height=36>
+        <td width=700 rowspan=4><div class="left-img-div"></div></td>
+        <td width=0 rowspan=4></td>
+        <td class="title-td">欢迎大数据分析管理控制台</td>
+    </tr>
+    <tr height=181>
+        <td class="form-td">
+            <br>
+            <form id="postForm" method="post" action="/system/login/check" onsubmit="return doCheck()">
+            <div class="labelClass">
+                　　UN：<input class="txtClass" type="text" id="loginName" name="loginName"/>
+            </div>
+            <div style="height:12px"></div>
+            <div class="labelClass">
+                　　PW：<input class="txtClass" type="password" id="password" name="password"/>
+            </div>
+            <div style="height:20px"></div>
+            <div style="width:100%;text-align:center;">
+                <input class="btnClass" type="submit" value="LOGIN" />
+                <input class="btnClass" type="reset" value="RESET" />
+            </div>
+            <div style="height:20px"></div>
+            </form>
+        </td>
+    </tr>
+    <tr height=25><td class="version-td">版本号:<span text="v1" th:text="${version}">ver1</span></td></tr>
+    <tr height=103><td class="right-img-div"></td></tr>
+</table>
+<script type="text/javascript" src="/script/md5.js" ></script>
+<script>
+    function doCheck()
+    {
+        if($("#loginName").val()==""){
+            $.messager.alert("提示","用户名不能为空",'info');
+            return false;
+        }
+        if($("#password").val()==""){
+            $.messager.alert("提示","密码不能为空",'info');
+            return false;
+        }
+        MD5_Typ = 'Typ32';
+        $("#password").val((MD5($("#password").val())));
+        return true;
+    }
+    $("#loginName").focus()
+</script>
+</body>
+</html>

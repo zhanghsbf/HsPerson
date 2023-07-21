@@ -1,0 +1,325 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+<head>
+<title>web主页</title>
+<script type="text/javascript" src="/script/d3.js"></script>
+<script type="text/javascript" src="/script/d3.layout.cloud.js"></script>
+<script type="text/javascript" src="/script/D3Chart.js"></script>
+</head>
+<body>
+<div th:include="common/webHeader.html" />
+<div th:include="common/webTopper.html"/>
+	<br>
+	<div id="generalSearchId" class="general_search_init">
+		<div class="general_search_form">
+			<span style="border:1px solid #00A2CA;width:150;height:32;position:absolute;overflow:hidden;">
+				<select class="select_tag_type" id="selectTagBaseType">
+					<option elementtype="Enumeration" value="@tag.tagName">标签名称</option>
+				</select>
+			</span>
+			<span style="padding-left:155px">
+				<input type="text" class="inputSearchKey" readonly="readonly" id="generalSearchKey" realKey="" searchType="select" autocomplete="off" placeholder="请选择下方标签或属性" />
+				<button type="submit" class="searchBtn"  id="searchBtn">搜索</button>
+<!--				<button type="submit" class="searchBtn" id="advancedSearchBtn">高级搜索</button>-->
+			</span>
+			<div id="searchTips" style="width:480px;margin-left: 372px;"></div>
+		</div>
+		<br>
+		<div id="bgLoad" style="display: none;">
+			<div id="loadDiv" style="text-align: center;">
+				<img alt="" id="loadImg" src="/images/loading.gif" />">
+			</div>
+		</div>
+		<div  class="cloud">
+			<div class="cloud tag_cloud" id="tagCloud"></div>
+			<div class="cloud type_cloud" id="typeCloud"></div>
+		</div>
+	</div>
+	<!-- 页面主体 -->
+	<div class="main_body">
+		<table width=1228>
+			<tr>
+				<td width=60% valign=top>
+					<div class="content_div" id="contentBody"></div><br>
+					<div class="page" id="page"></div>
+				</td>
+				<td width=5%>&nbsp;</td>
+				<td width=35% valign=top>
+					<div class="right_div" id="chartBody">
+						<!-- 标签top排序 -->
+						<div class="top_tag_bar" id="topTagBar"></div>
+						<br>
+						<!-- 标签占比 -->
+						<div class="tag_brother_pie" id="tagBrotherPie"></div>
+					</div>
+				</td>
+			</tr>
+		</table>
+	</div>
+	<div th:include="common/webFooter.html"/>
+	<script type="text/javascript">
+		var tags = "[[${tags} ]]".replaceAll("&quot;","\" ").replaceAll(" ","");
+		var types =  "[[${types} ]]".replaceAll("&quot;","\" ").replaceAll(" ","");
+	</script>
+	<script type="text/javascript" th:inline="none">
+		var isLoding=false;//是否在加载
+		//搜索 
+		$('#searchBtn').click(function() {
+			//搜索不取输入框，直接取searchKey
+			var searchInfo = $('#generalSearchKey').val();
+			if (searchInfo != undefined) {
+				if (searchInfo != '') {
+					//枚举型属性或者标签，认定为选择的搜索项,直接采用realKey的值，不采用输入的值，所以当realKey为空的时候，认定为不是选择的，不允许通过
+					if($('#generalSearchKey').attr('searchType')=='select' && $('#generalSearchKey').attr('realKey')==''){
+						alert("请选择搜索内容！");
+						return ;
+					}
+					padingIndexQuery(1);
+				}else{
+					location.reload();
+				}
+			}
+		});
+		/* 高级搜索 */
+		// $('#advancedSearchBtn').click(function(){
+		// 	window.location.href='/web/advancedSearch.jsp" />';
+		// });
+		//页面点击查询,index为页面序号
+		function padingIndexQuery(index) {
+			//开启遮罩功能,暂未使用
+			var searchKey =$('#generalSearchKey').attr('searchType')=='select'?$('#generalSearchKey').attr('realKey'):$('#generalSearchKey').val();
+			var obj = {
+				'searchKey' :searchKey,
+				'searchType':$('#generalSearchKey').attr('searchType'),
+				'searchCode':$('#selectTagBaseType').val(),
+				'page' : index
+			};
+			//查询数据
+			query(obj);
+		};
+		//标签比例图
+		function brotherTagPie(v){
+			var tagsData = new Array();
+			$.each(v, function(i, item) {
+				tagsData.push([item.tagName,parseInt(item.count)]);
+			});
+			if(tagsData.length==0){
+				return ;
+			}
+			var pie = new D3c.Chart.Pie({
+				data:tagsData,
+				width:450,
+				height:380,
+				bgColor : '#FDFDFD',
+				outerRadius:100,
+				innerRadius:20,
+				target : 'tagBrotherPie',
+				title:{
+					dev:50,
+					text:"同类标签占比分布",
+					height:24,
+					family:'Microsoft YaHei',
+					size:24
+				},
+				legend:{
+					fontSize:11,
+					fontFamily:'Microsoft YaHei'
+				},
+				tips:{
+					fontFamily:'Verdana',
+					fontSize:10,
+					fontAlign:'start',
+					rotate:-90,
+					dev:5
+				}
+			});
+		}
+
+		//查询数据并显示，查询对象
+		function query(obj) {
+			$('#searchBtn').attr('disabled', true);
+			$.ajax({
+				type : 'POST',
+				url : '/web/search/init',
+				data : obj,
+				dataType : 'json',
+				beforeSend:function(){
+					isLoding=true;
+					showOverlay();
+				},
+				complete:function(){
+					hideOverlay();
+					isLoding = false;
+					//回到 顶部
+					$('html body').animate({scrollTop:0},500);
+				},
+				success : function(data) {
+					if (data.success != undefined && data.success == '0') {
+						window.location.reload();
+						alert(data.info);
+						return;
+					}
+					$('#generalSearchId').removeClass().addClass("general_search");
+					//添加数据信息
+					$('#contentBody').empty();
+					$.each(data.rows, function(i, item) {
+						var url = '/web/detail/getNodeById?id='+item.id;
+						$('#contentBody').append(addResultHtml(url,item));
+					});
+					//添加分页信息
+					pager2Div(data.pager.start, data.pager.end, obj.page);
+					//标签排序
+					$('#topTagBar').empty();
+					topTagBar(data.tagTop);
+					$('#tagBrotherPie').empty();
+					//标签占比
+					if(data.tagPie!=null && data.tagPie!=undefined && data.tagPie!=""){
+						brotherTagPie(data.tagPie);
+					}
+					//隐藏云词
+					$('.cloud').hide();
+					$('#searchBtn').attr('disabled', false);
+				},
+				error : function(er) {
+					$('#searchBtn').attr('disabled', false);
+				}
+			});
+		}
+		
+		/**
+		 * 页面分页序号点击事件，
+		 * @param pageNow 当前页面序号
+		 * @param pageSum 页面总数
+		 * @author zxc
+		 * @date 2016-07-15
+		 */
+		function padingIndexClick(pageNow) {
+			//查询数据
+			padingIndexQuery(pageNow);
+		}
+
+		//回车事件
+		document.onkeydown = function(e) {
+			var ev = document.all ? window.event : e;
+			if (ev.keyCode === 13) {
+				$('#searchBtn').click();
+			}
+		};
+
+		//初始化云图
+		tagCloud();
+		typeCloud();
+
+		//标签云初始化
+		function tagCloud() {
+			var tagsData = new Array();
+			if (tags != undefined && tags != null && tags != "") {
+				var tagsObj = eval('(' + tags + ')');
+				$.each(tagsObj, function(i, item) {
+					tagsData.push({
+						text : item.name,
+						size : 10 + Math.random() * 20,
+						rotate :0,
+						myId : item.id
+					});
+				});
+			}
+			var tagDiv = new D3c.Chart.Cloud({
+				data : tagsData,
+				width : 350,
+				height : 250,
+				margin : [ , , 100 ],
+				bgColor : '#FFFFFF',
+				target : 'tagCloud'
+			}, tagClickCallback);
+
+		};
+		//标签云图点击事件回调函数
+		function tagClickCallback(e) {
+			tagClick(e.text);
+		};
+		
+		function tagClick(text){
+			$('#selectTagBaseType').val('@tag.tagName');
+			//设置搜索的值
+			$('#generalSearchKey').attr('searchType','select');
+			$('#generalSearchKey').attr('realKey',text);
+			$('#generalSearchKey').val(text);
+			//改变select框选择的值
+			$('#searchBtn').click();
+		}
+		
+		//类型云图初始化
+		function typeCloud() {
+			//类型属性
+			var typesData = new Array();
+			if (types != undefined && types != null && types != '') {
+				var typesObj = eval('(' + types + ')');
+				$.each(typesObj, function(i, item) {
+					typesData.push({
+						text : item.typeCNPath,
+						size : 10 + Math.random() * 20,
+						rotate :0,
+						myId : item.typeENPath
+					});
+					//动态添加选择框的选择值
+					$('#selectTagBaseType').append('<option elementType="'+item.elementType+'" value="'+item.typeENPath+'">'+item.typeCNPath+'</option>');
+				});
+			}
+			var typeDiv = new D3c.Chart.Cloud ({
+				data : typesData,
+				width : 350,
+				height : 250,
+				margin : [ , , 100 ],
+				bgColor : '#FFFFFF',
+				target : 'typeCloud'
+			}, typeClickCallback);
+
+		};
+		//属性云图点击回调函数
+		function typeClickCallback(e) {
+			//改变select选中框的值
+			if (types != undefined && types != null && types != '') {
+				var typesObj = eval('(' + types + ')');
+				$.each(typesObj, function(i, item) {
+					if(item.typeCNPath==e.text){
+						$('#selectTagBaseType').val(item.typeENPath);
+						$('#selectTagBaseType').change();
+						return false;
+					}
+				});
+			}
+		};
+		
+		$('#selectTagBaseType').change(function(){
+			var options=$('#selectTagBaseType option:selected');
+			if(options.attr('elementtype')=='Enumeration'){
+				//枚举类型
+				$('#generalSearchKey').attr('searchType','select');
+			}else{
+				$('#generalSearchKey').attr('searchType','text');
+			}
+			$('#generalSearchKey').val("");
+		});
+		/* 输入框变化事件 */
+		$('#generalSearchKey').on("input",function(event){
+			if(Trim($('#generalSearchKey').val())==""){
+				//输入为空
+				return ;
+			}
+			if($('#generalSearchKey').attr('searchType')=='text'){
+				//文本型不需要
+				return ;
+			}
+			//如果是枚举型，直接取realKey,若realKey为空串 直接认定为不合法的输入
+			$('#generalSearchKey').attr('realKey','');
+			var url = "/web/search/matchSearch";
+			var param ={
+				'code':$('#selectTagBaseType').val(),
+				'key':$('#generalSearchKey').val()
+			}
+			searchTips($(this),url,param);
+		});
+	</script>
+</body>
+</html>

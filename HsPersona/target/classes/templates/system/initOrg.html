@@ -1,0 +1,353 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+<body>
+    <div th:include="common/header.html"/>
+    <table id="tg" toolbar="#tb"></table>
+    <div id="tb">
+        <sys:permission code="editOrg">
+        <a href="#" onclick="doAdd()" class="easyui-linkbutton" iconCls="icon-add" plain="true">添加</a>  
+        <a href="#" onclick="doEdit()" class="easyui-linkbutton" iconCls="icon-edit" plain="true">修改</a>
+        <a href="#" onclick="doDelete()" class="easyui-linkbutton" iconCls="icon-remove" plain="true">删除</a> 
+        <a href="#" onclick="doCancel()" class="easyui-linkbutton" iconCls="icon-ban" plain="true">启禁</a>
+        </sys:permission>
+        <a href="#" onclick="doSort()" class="easyui-linkbutton" iconCls="icon-up" plain="true">排序</a>  
+        <a href="#" onclick="doAllSort()" class="easyui-linkbutton" iconCls="icon-reload" plain="true">全部重排</a> 
+        <a href="#" onclick="doExpand()" class="easyui-linkbutton" iconCls="icon-expand" plain="true">全部展开</a> 
+        <a href="#" onclick="doCollapse()" class="easyui-linkbutton" iconCls="icon-collapse" plain="true">全部折叠</a>    
+    </div>
+    <div id="w" class="easyui-window" style="width:350;height:170;" title="维护机构" modal="true">
+            <br>
+            <form method="post" id="actionForm"> 
+                <input type="hidden" id="id" name="id" />
+                <input type="hidden" id="parentId" name="parentId" />
+                <input type="hidden" id="status" name="status" />
+                <table> 
+                    <tr> 
+                        <td class="info-td">机构名称：</td> 
+                        <td><input type="text" id="name" name="name" />&nbsp;<font color=red>*</font></td>
+                    </tr>
+                    <tr>
+                        <td class="info-td">机构类型：</td>
+                        <td>
+                            <select class="easyui-combobox" id="typeId" name="type" data-options="editable:false,panelHeight:'auto'">
+                            <sys:option code="orgType" />
+                            </select>&nbsp;<font color=red>*</font>
+                        </td> 
+                    </tr>
+                </table>
+                <br>
+                <a class="easyui-linkbutton" iconcls="icon-ok" href="javascript:void(0);" onclick="doSave()">保存</a> 
+                <a class="easyui-linkbutton" iconcls="icon-cancel" href="javascript:void(0);" onclick="doClose()">关闭</a> 
+            </form>
+            <br>
+    </div>
+    <div id="sw" class="easyui-window" style="width:200;height:350" title="机构排序" modal="true">
+        <table id="sdg"></table>
+    </div>
+    <script type="text/javascript" th:inline="none">
+    $(function (){
+        $('#w').window('close'); 
+        $('#sw').window('close'); 
+        $('#tg').treegrid({  
+            url:"/system/org/init",
+            border:'false',
+            fit:true,
+            treeField:'name',
+            idField:'id',
+            title:'机构列表',
+            border:0,
+            rownumbers:true,
+            columns:[[ 
+                {title:'机构名称',field:'name',width:240}, 
+                {title:'树结构代码',field:'treeCode',width:100}, 
+                {title:'机构类型',field:'typeName',width:120,align:'center'}, 
+                {title:'状态',field:'status',width:80,align:'center',formatter:status} 
+            ]] 
+        });
+        $('#sdg').datagrid({
+            url:"/system/org/getChild",
+            border:false,
+            rownumbers:true,
+            fit: true,
+            singleSelect:true,
+            queryParams:{orgId:''},
+            toolbar:[
+                {text:'上移',iconCls:'icon-up',handler:doUp},
+                {text:'下移',iconCls:'icon-down',handler:doDown},
+                {text:'保存',iconCls:'icon-save',handler:doSaveSort}
+            ],
+            columns:[[
+                {field:'id',hidden:true},
+                {field:'name',title:'机构名称',width:150,align:'center'}
+            ]]
+        });
+    });
+    function status(value)
+    {
+        return (value==0)?"<font color='red'>废弃</font>":"<font color='green'>正常</font>";
+    }
+    function doAdd()
+    {
+        var rows = $('#tg').treegrid('getSelected');
+        if(rows==null)
+        {
+            $.messager.alert('提示','请选择需要新增子机构的节点'); 
+            return;
+        }
+        $('#actionForm').form('clear');
+        $('#parentId').attr('value',rows.id);
+        $('#w').window('open'); 
+    }
+    function doClose()
+    {
+        $('#w').window('close');
+    }
+    function doSave()
+    {
+        $("#typeId").val($('#typeId').combobox('getValue'));
+        $('#actionForm').form('submit',{
+            url:"/system/org/save",
+            onSubmit: function(){
+                if($('#name').val()=="")
+                {
+                    $.messager.alert('提示','机构名称不能为空');
+                    return false;
+                }
+                if($('#typeId').val()=="")
+                {
+                    $.messager.alert('提示','机构类型不能为空');
+                    return false;
+                }
+            },
+            success:function(data){
+                var json=eval('('+data+')');  
+                if(json.success==1)
+                {
+                    $('#w').window('close');
+                    $.messager.alert('提示','保存机构数据成功');
+                    $('#tg').treegrid('reload');
+                }
+                else
+                {
+                    $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                }
+            }   
+        });
+    }
+    function doEdit()
+    {
+        var rows = $('#tg').treegrid('getSelected');
+        if(rows==null)
+        {
+            $.messager.alert('提示','请选择需要修改的数据'); 
+            return;
+        }
+        if(rows.id=="-1")
+        {
+            $.messager.alert('提示','您选择的节点为虚拟根机构，不能修改'); 
+            return;
+        }
+        $.ajaxSetup({cache: false});
+        $('#actionForm').form('load',"/system/org/edit?id="+rows.id);
+        $('#w').window('open'); 
+    }
+    function doCancel()
+    {
+        var rows = $('#tg').treegrid('getSelected');
+        if(rows==null)
+        {
+            $.messager.alert('提示','请选择需要修改废启状态的机构'); 
+            return;
+        }
+        $.messager.confirm('询问', '修改机构废启状态将同时修改所有子机构状态，确定修改？', function(rtn){
+            if(rtn)
+            {
+                $.ajax({  
+                    type: "POST",
+                    url:"/system/org/cancel",
+                    data: { orgId: rows.id},
+                    success: function (data) {
+                        var json=eval('('+data+')');  
+                        if(json.success==1)
+                        {
+                            $.messager.alert('提示','修改机构的废启状态成功');
+                            $('#tg').treegrid('reload');
+                        }
+                        else
+                        {
+                            $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                        }
+                    }
+                });
+            }
+        });
+    }
+    function doDelete()
+    {
+        var rows = $('#tg').treegrid('getSelected');
+        if(rows==null)
+        {
+            $.messager.alert('提示','请选择需要删除的机构'); 
+            return;
+        }
+        if(rows.id=="-1")
+        {
+            $.messager.alert('提示','您选择的节点为虚拟根机构，不能删除'); 
+            return;
+        }
+        $.messager.confirm('询问', '删除机构将同时删除所有子孙机构，确定删除？', function(rtn){
+            if (rtn){
+                $.ajax({  
+                    type: "POST",
+                    url:"/system/org/delete",
+                    data: { orgId: rows.id},
+                    success: function (data) {
+                        var json=eval('('+data+')');  
+                        if(json.success==1)
+                        {
+                            $.messager.alert('提示','删除机构成功');
+                            $('#tg').treegrid('reload');
+                        }
+                        else
+                        {
+                            $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                        }
+                    }
+                });
+            }
+        });
+    }
+    function doSort()
+    {
+        var rows = $('#tg').treegrid('getSelected');
+        if(rows==null)
+        {
+            $.messager.alert('提示','请选择需要排序子节点的机构'); 
+            return;
+        }
+        if(rows.leaf==1)
+        {
+            $.messager.alert('提示','叶子节点不存在子节点，不能对其子节点排序'); 
+            return;
+        }
+        var param = {orgId : rows.id};
+        $("#sdg").datagrid("load", param);
+        $('#sw').window('open');
+    }
+    function doAllSort()
+    {
+        $.messager.confirm('询问', '全部重排将按现在的顺序挪移填补空白位置编码，确定重排？', function(rtn){
+            if (rtn){
+                $.ajax({  
+                    type: "POST",
+                    url:"/system/org/allSort",
+                    success: function (data) {
+                        var json=eval('('+data+')');  
+                        if(json.success==1)
+                        {
+                            $.messager.alert('提示','重排机构数据成功');
+                            $('#tg').treegrid('reload');
+                        }
+                        else
+                        {
+                            $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                        }
+                    }
+                });
+            }
+        });
+    }
+    function doUp()
+    {
+        var rows = $('#sdg').datagrid('getSelected');
+        if(rows==null)
+        {
+            $.messager.alert('提示','请选择需要排序的机构'); 
+            return;
+        }
+        var index = $('#sdg').datagrid('getRowIndex',rows);
+        if(index>0)
+        {
+            $('#sdg').datagrid('deleteRow',index);
+            $('#sdg').datagrid('insertRow',{
+                index:index-1,
+                row:rows
+            });
+            $('#sdg').datagrid('selectRow',index-1);
+        }
+    }
+    function doDown()
+    {
+        var rows = $('#sdg').datagrid('getSelected');
+        if(rows==null)
+        {
+            $.messager.alert('提示','请选择需要排序的机构'); 
+            return;
+        }
+        var index = $('#sdg').datagrid('getRowIndex',rows);
+        if(index<$('#sdg').datagrid('getRows').length-1)
+        {
+            $('#sdg').datagrid('deleteRow',index);
+            $('#sdg').datagrid('insertRow',{
+                index:index+1,
+                row:rows
+            });
+            $('#sdg').datagrid('selectRow',index+1);
+        }
+    }
+    function doSaveSort()
+    {
+        var rows = $("#sdg").datagrid("getRows");
+        var isChange = false;
+        for(var i=0;i<rows.length-1;i++)
+        {
+            if(rows[i].treeCode>rows[i+1].treeCode)
+            {
+                isChange=true;
+                break;
+            }
+        }
+        if(isChange)
+        {
+            var id = "";
+            for(var i=0;i<rows.length;i++)
+            {
+                id += ";" + rows[i].id;
+            }
+            if(id.length>0)
+            {
+                $.ajax({  
+                    type: "POST",
+                    url:"/system/org/sort",
+                    data: { orgId: id.substring(1)},
+                    success: function (data) {
+                        var json=eval('('+data+')');  
+                        if(json.success==1)
+                        {
+                            $.messager.alert('提示','机构排序成功');
+                            $('#tg').treegrid('reload');
+                            $('#sw').window('close');
+                        }
+                        else
+                        {
+                            $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                        }
+                    }
+                });
+            }
+        }
+        else
+        {
+            $.messager.alert('提示','机构顺序没有改变，不需要保存'); 
+        }
+    }
+    function doExpand()
+    {
+        $('#tg').treegrid('expandAll');
+    }
+    function doCollapse()
+    {
+        $('#tg').treegrid('collapseAll');
+    }
+    </script>
+</body>

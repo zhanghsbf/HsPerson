@@ -1,0 +1,374 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	  xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+<body>
+<div th:include="common/header.html"/>
+	<table id="dg" toolbar="#tb"></table>
+	<div id="tb">
+        <a href="#" onclick="doAdd()" class="easyui-linkbutton" iconCls="icon-add" plain="true">添加</a>
+        <a href="#" onclick="doEdit()" class="easyui-linkbutton" iconCls="icon-edit" plain="true">修改</a>
+        <a href="#" onclick="doSecondary()" class="easyui-linkbutton" iconCls="icon-edit" plain="true">维护从表映射关系</a>
+        <a href="#" onclick="doDelete()" class="easyui-linkbutton" iconCls="icon-remove" plain="true">删除</a>
+        <a href="#" onclick="doBack()" class="easyui-linkbutton" iconCls="icon-back" plain="true">返回</a>
+    </div>
+    <div id="w" class="easyui-window" style="padding-left:15px;width:400;height:240;" title="维护从表基本信息" modal="true">
+		<br>
+		<form method="post" id="actionForm"> 
+			<input type="hidden" id="id" name="id" />
+            <input type="hidden" id="configId" name="configId" />
+			<table> 
+				<tr>
+					<td class="info-td">对应主表属性编码：</td>
+					<td><input type="text" id="keyName" name="keyName" readOnly onclick="doSelectSecondaryField()"/>&nbsp;<font color=red>*</font></td>
+				</tr>
+				<tr>
+					<td class="info-td">从表文件全路径：</td>
+					<td><input type="text" id="fileName" name="fileName"/>&nbsp;<font color=red>*</font></td>
+				</tr>
+				<tr>
+					<td class="info-td">外键下标：</td>
+					<td><input type="text" id="foreignKeyIndex" name="foreignKeyIndex"/>&nbsp;<font color=red>*</font></td>
+				</tr>
+				<tr> 
+					<td class="info-td">主从映射类型：</td> 
+					<td>
+						<select class="easyui-combobox" id="mappingType" name="mappingType" data-options="editable:false,panelHeight:'auto'">
+						<option value=0>一对一</option>
+						<option value=1>一对多</option>
+						</select>
+					</td> 
+				</tr>
+			</table>
+			<br>
+			<a class="easyui-linkbutton" iconcls="icon-ok" href="javascript:void(0)" onclick="doSave()">保存</a> 
+			<a class="easyui-linkbutton" iconcls="icon-cancel" href="javascript:void(0)" onclick="doClose()">关闭</a> 
+		</form>
+		<br>
+    </div>
+    <div id="w1" class="easyui-window" style="width:850;height:450;" title="选择对应主表属性编码" modal="true">
+	    <table id="dg1" toolbar="#tb1"></table>
+	    <div id="tb1">
+	        <a href="#" onclick="doSureSecondary()" class="easyui-linkbutton" iconCls="icon-ok" plain="true">确定</a>
+	        <a href="#" onclick="doCloseSecondary()" class="easyui-linkbutton" iconCls="icon-cancel" plain="true">关闭</a>
+	    </div>
+    </div>
+    <div id="w2" class="easyui-window" style="width:800;height:450;" title="维护ETL从表映射信息" modal="true">
+	    <table id="dg2" toolbar="#tb2"></table>
+	    <div id="tb2">
+	        <a href="#" onclick="doAddSecondary()" class="easyui-linkbutton" iconCls="icon-add" plain="true">添加</a>
+	        <a href="#" onclick="doDeleteSecondary()" class="easyui-linkbutton" iconCls="icon-remove" plain="true">删除</a>
+	    </div>
+    </div>
+    <div id="w3" class="easyui-window" style="width:650;height:450;" title="选择模型类型基础属性" modal="true">
+	    <table id="dg3" toolbar="#tb3"></table>
+	    <div id="tb3">
+	        <a href="#" onclick="doSureField()" class="easyui-linkbutton" iconCls="icon-ok" plain="true">确定</a>
+	        <a href="#" onclick="doCloseField()" class="easyui-linkbutton" iconCls="icon-cancel" plain="true">关闭</a>
+	    </div>
+    </div>
+	<script type="text/javascript">
+		var configId = "[[${configId}]]";
+		var code = "[[${code}]]";
+		var industryType = "[[${industryType}]]";
+
+	</script>
+	<script type="text/javascript" th:inline="none">
+	/***********************************************
+	 ******************** 初始化数据 ****************
+	 ***********************************************/
+    $(function () {
+    	$('#w').window('close');
+    	$('#w1').window('close'); 
+    	$('#w2').window('close');
+        $('#w3').window('close');  
+    	$('#dg').datagrid({
+            url:"/etl/etlTransformJson/initTable?configId="+configId,
+            rownumbers:true,
+            title:'从表配置列表',
+            border:false,
+            fit: true,
+            singleSelect:true,
+            columns:[[
+                {field:'keyName',title:'该表对应主表属性编码',width:200,halign:'center'},
+                {field:'typeName',title:'从表数据类型名',width:200,halign:'center'},
+                {field:'fileName',title:'从表文件全路径',width:340,halign:'center'},
+                {field:'foreignKeyIndex',title:'从表外键下标',width:100,align:'center'},
+                {field:'mappingType',title:'映射类型',width:100,align:'center',formatter:mappingType}
+            ]]
+        });
+    	$('#dg1').datagrid({
+        	url:"/tag/tagExtModel/initFieldByType?fieldType=3&code="+code+"&industryType="+industryType,
+            rownumbers:true,
+            border:false,
+            fit: true,
+            singleSelect:true,
+            pagination:true,
+            pageSize: 15,
+            pageList: [15,20,30],
+            beforePageText: '第',
+            afterPageText: '页    共 {pages} 页',  
+            displayMsg: '当前显示 {from} - {to} 条记录   共 {total} 条记录',
+            columns:[[
+				{field:'dataTypeElement.code',title:'属性要素编码',width:180,halign:'center'},
+                {field:'dataTypeElement.name',title:'属性要素名称',width:200,halign:'center'},
+                {field:'selfExtType.code',title:'数据类型',width:120,halign:'center'}
+            ]],
+            onDblClickRow:function(index,node){
+            	doSureSecondary();
+            }
+        });
+    	$('#dg2').datagrid({
+            url:"/etl/etlTransformJson/initSecondary",
+            rownumbers:true,
+            border:false,
+            fit: true,
+            singleSelect:true,
+            columns:[[
+                {field:'index',title:'数据列下标',width:100,align:'center',sortable:true},
+                {field:'code',title:'对应属性编码',width:200,halign:'center',sortable:true},
+                {field:'name',title:'对应属性名称',width:300,halign:'center'}
+            ]]
+        });
+    	$('#dg3').datagrid({
+        	url:"/tag/tagExtModel/initFieldByType?fieldType=1@2&industryType="+industryType,
+            rownumbers:true,
+            border:false,
+            fit: true,
+            singleSelect:true,
+            pagination:true,
+            pageSize: 15,
+            pageList: [15,20,30],
+            beforePageText: '第',
+            afterPageText: '页    共 {pages} 页',  
+            displayMsg: '当前显示 {from} - {to} 条记录   共 {total} 条记录',
+            columns:[[
+				{field:'dataTypeElement.code',title:'属性要素编码',width:180,halign:'center'},
+                {field:'dataTypeElement.name',title:'属性要素名称',width:200,halign:'center'},
+                {field:'selfExtType.code',title:'数据类型',width:120,halign:'center'}
+            ]],
+            onDblClickRow:function(index,node){
+            	doSureField();
+            }
+        });
+    	function mappingType(v){
+    		return v==0?"一对一":"一对多";
+    	}
+    });
+    /***********************************************
+	 ******************** 主界面函数 ****************
+	 ***********************************************/
+	//添加按钮
+	function doAdd(){
+	    $('#actionForm').form('clear');
+	    $('#mappingType').combobox('setValue',0);
+        $("#configId",$("#actionForm")).val(configId);
+	    $('#w').window({top:100});
+	    $('#w').window('open'); 
+	}
+	//编辑按钮
+    function doEdit(){
+        var rows = $('#dg').datagrid('getSelected');
+        if(rows==null){
+            $.messager.alert('提示','请选择需要修改的数据'); 
+            return;
+        }
+        $("#id",$("#actionForm")).val(rows.id);
+        $("#configId",$("#actionForm")).val(configId);
+        $("#keyName",$("#actionForm")).val(rows.keyName);
+        $("#fileName",$("#actionForm")).val(rows.fileName);
+        $("#foreignKeyIndex",$("#actionForm")).val(rows.foreignKeyIndex);
+	    $('#mappingType').combobox('setValue',rows.mappingType);
+        $('#w').window({top:100});
+        $('#w').window('open'); 
+    }
+	//维护从表映射关系按钮
+	function doSecondary(){
+		var rows = $('#dg').datagrid('getSelected');
+        if(rows==null){
+            $.messager.alert('提示','请选择需要维护的数据'); 
+            return;
+        }
+        var param = {id: rows.id};
+        $("#dg2").datagrid("load", param);
+        $('#w2').window({top:50});
+        $('#w2').window('open'); 
+	}
+	//删除按钮
+	function doDelete(){
+        var rows = $('#dg').datagrid('getSelected');
+        if(rows==null){
+            $.messager.alert('提示','请选择需要删除的数据'); 
+            return;
+        }
+        $.messager.confirm('询问', '确定要删除该数据信息？', function(rtn){
+            if (rtn){
+                $.ajax({  
+                    type: "POST",
+                    url:"/etl/etlTransformJson/deleteTable",
+                    data: {id: rows.id},
+                    success: function (data) {
+                        var json=eval('('+data+')');  
+                        if(json.success==1){
+                            $.messager.alert('提示','删除数据成功');
+                            $('#dg').datagrid('reload');
+                        }else{
+                            $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                        }
+                    }
+                });
+            }
+        });
+    }
+	//返回按钮
+	function doBack(){
+		location.href="/etl/etlTransformJson/to";
+	}
+	/***********************************************************
+	 ****************** 修改与添加基本信息界面函数 ****************
+	 ***********************************************************/
+	//保存按钮
+	function doSave(){
+        $('#actionForm').form('submit',{
+            url:"/etl/etlTransformJson/saveTable",
+            onSubmit: function(){
+                if($('#keyName',$("#actionForm")).val()==""){
+                    $.messager.alert('提示','对应主表属性编码不能为空');
+                    return false;
+                }
+                if($('#fileName',$("#actionForm")).val()==""){
+                    $.messager.alert('提示','从表表文件名不能为空');
+                    return false;
+                }
+                var fkIndex = $('#foreignKeyIndex',$("#actionForm")).val();
+                if(fkIndex=="" || isNaN(fkIndex) || fkIndex-0<0 || fkIndex.indexOf(".")>=0){
+                    $.messager.alert('提示','从表外键下标只能为大于等于0的整数');
+                    return false;
+                }
+            },
+            success:function(data){
+                var json=eval('('+data+')');  
+                if(json.success==1){
+                    $('#w').window('close');
+                    $.messager.alert('提示','保存数据成功');
+                    $('#dg').datagrid('load');
+                }else{
+                    $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                }
+            }   
+        });
+    }
+	//关闭按钮
+	function doClose(){
+		 $('#w').window('close');
+	}
+	//选择对应主表属性编码单击事件
+	function doSelectSecondaryField(){
+		$('#w1').window({top:30});
+    	$('#w1').window('open');
+	}
+	//确定选择主表属性编码按钮
+	function doSureSecondary(){
+		var rows = $('#dg1').datagrid('getSelected');
+        if(rows==null){
+            $.messager.alert('提示','请选择数据模型类型属性'); 
+            return;
+        }
+        $('#keyName',$('#actionForm')).val(rows.dataTypeElement.code);
+     	$('#w1').window('close');
+	}
+	function doCloseSecondary(){
+		$('#w1').window('close');
+	}
+	/************************************************************
+	 ******************** 维护主表映射关系界面函数 ****************
+	 ************************************************************/
+	//添加按钮
+    function doAddSecondary(){
+    	var rows = $('#dg').datagrid('getSelected');
+        if(rows==null){
+            $.messager.alert('提示','请选择需要维护的ETL配置数据'); 
+            return;
+        }
+    	var param = {code: rows.typeName};
+        $("#dg3").datagrid("load", param);
+    	$('#w3').window({top:30});
+    	$('#w3').window('open');
+    }
+	//删除按钮
+    function doDeleteSecondary(){
+    	var configRow = $('#dg').datagrid('getSelected');
+        if(configRow==null){
+            $.messager.alert('提示','请选择需要维护的ETL从表配置数据'); 
+            return;
+        }
+    	var rows = $('#dg2').datagrid('getSelected');
+        if(rows==null){
+            $.messager.alert('提示','请选择需要删除的数据'); 
+            return;
+        }
+        $.messager.confirm('询问', '确定要删除该数据信息？', function(rtn){
+            if (rtn){
+	            $.ajax({
+	                type: "POST",
+	                url:"/etl/etlTransformJson/deleteSecondary",
+	                data: {
+	                	code:rows.code,
+	                	configId:configRow.id
+	                },
+	                success: function (data) {
+	                    var json=eval('('+data+')');  
+	                    if(json.success==1){
+	                    	$.messager.alert('提示','删除数据成功');
+	                        $('#dg2').datagrid('reload');
+	                    }else{
+	                        $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+	                    }
+	                }
+	            });
+            }
+        });
+    }
+	//确定选择数据类型属性按钮
+    function doSureField(){
+    	var configRow = $('#dg').datagrid('getSelected');
+        if(configRow==null){
+            $.messager.alert('提示','请选择需要维护的ETL配置数据'); 
+            return;
+        }
+    	var fieldRow = $('#dg3').datagrid('getSelected');
+        if(fieldRow==null){
+            $.messager.alert('提示','请选择数据模型类型属性'); 
+            return;
+        }
+        $.messager.prompt('提示','属性所在列下标',function(text){
+    		if (text){
+    			if(text=="" || isNaN(text) || text-0<0 || text.indexOf(".")>=0){
+    				$.messager.alert('提示','请输入大于等于0的整数'); 
+    			}else{
+        			$.ajax({  
+                        type: "POST",
+                        url:"/etl/etlTransformJson/saveSecondary",
+                        data: {
+                        	code:fieldRow.dataTypeElement.code,
+                        	configId:configRow.id,
+                        	index:text
+                        },
+                        success: function (data) {
+                            var json=eval('('+data+')');  
+                            if(json.success==1){
+                                $('#dg2').datagrid('reload');
+                            	$('#w3').window('close');
+                            }else{
+                                $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                            }
+                        }
+                    });
+    			}
+    		}
+    	}); 
+    }
+	//关闭选择数据类型属性按钮
+    function doCloseField(){
+    	$('#w3').window('close');
+    }
+	</script>
+</body>

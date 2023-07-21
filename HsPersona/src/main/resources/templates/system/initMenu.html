@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+<body>
+<style>
+  .easyui-window input{
+    width:250px;
+  }
+</style>
+<div th:include="common/header.html"/>
+<table id="tg" toolbar="#tb"></table>
+<div id="tb">
+  <sys:permission code="editMenu">
+    <a href="#" onclick="doAdd()" class="easyui-linkbutton" iconCls="icon-add" plain="true">添加</a>
+    <a href="#" onclick="doEdit()" class="easyui-linkbutton" iconCls="icon-edit" plain="true">修改</a>
+    <a href="#" onclick="doDelete()" class="easyui-linkbutton" iconCls="icon-remove" plain="true">删除</a>
+    <a href="#" onclick="doBan()" class="easyui-linkbutton" iconCls="icon-ban" plain="true">启禁</a>
+  </sys:permission>
+  <a href="#" onclick="doSort()" class="easyui-linkbutton" iconCls="icon-up" plain="true">排序</a>
+  <a href="#" onclick="doAllSort()" class="easyui-linkbutton" iconCls="icon-reload" plain="true">全部重排</a>
+  <a href="#" onclick="doExpand()" class="easyui-linkbutton" iconCls="icon-expand" plain="true">全部展开</a>
+  <a href="#" onclick="doCollapse()" class="easyui-linkbutton" iconCls="icon-collapse" plain="true">全部折叠</a>
+</div>
+<div id="w" class="easyui-window" style="width:400px;height:170px;text-align:center;background:#f1f6ff" title="维护菜单" modal="true">
+  <br>
+  <form method="post" id="actionForm">
+    <input type="hidden" name="id" />
+    <input type="hidden" name="parentId" />
+    <input type="hidden" name="enable" />
+    <table width=100%>
+      <tr>
+        <td class="info-td" width=25%>菜单名称:</td>
+        <td><input type="text" name="name" />&nbsp;<font color=red>*</font></td>
+      </tr>
+      <tr>
+        <td class="info-td">地址：</td>
+        <td><input type="text" name="url" /></td>
+      </tr>
+    </table>
+    <br>
+    <a class="easyui-linkbutton" iconcls="icon-ok" href="javascript:void(0);" onclick="doSave()">保存</a>
+    <a class="easyui-linkbutton" iconcls="icon-cancel" href="javascript:void(0);" onclick="doClose()">关闭</a>
+  </form>
+  <br>
+</div>
+<div id="sw" class="easyui-window" style="width:210px;height:350px" title="菜单排序" modal="true">
+  <table id="sdg"></table>
+</div>
+<script type="text/javascript" th:inline="none">
+  $(function (){
+    $('#w').window('close');
+    $('#sw').window('close');
+    $('#tg').treegrid({
+      url:"/system/menu/init",
+      border:'false',
+      fit:true,
+      treeField:'name',
+      idField:'id',
+      border:0,
+      title:'菜单列表',
+      rownumbers:true,
+      columns:[[
+        {title:'菜单名称',field:'name',width:240},
+        {title:'树结构代码',field:'treeCode',width:100},
+        {title:'地址',field:'url',width:250},
+        {title:'状态',field:'enable',width:80,align:'center',formatter:status}
+      ]]
+    });
+    $('#sdg').datagrid({
+      url:"/system/menu/getChild",
+      border:false,
+      rownumbers:true,
+      fit: true,
+      singleSelect:true,
+      queryParams:{menuId:''},
+      toolbar:[
+        {text:'上移',iconCls:'icon-up',handler:doUp},
+        {text:'下移',iconCls:'icon-down',handler:doDown},
+        {text:'保存',iconCls:'icon-save',handler:doSaveSort}
+      ],
+      columns:[[
+        {field:'id',hidden:true},
+        {field:'name',title:'菜单名称',width:150,align:'center'}
+      ]]
+    });
+  });
+  function status(value)
+  {
+    return (value==0)?"<font color='red'>禁用</font>":"<font color='green'>启用</font>";
+  }
+  function doAdd()
+  {
+    var rows = $('#tg').treegrid('getSelected');
+    if(rows==null)
+    {
+      $.messager.alert('提示','请选择需要新增子菜单的节点');
+      return;
+    }
+    if(rows.levels==3)
+    {
+      $.messager.alert('提示','该菜单为叶子菜单，不能增加子节点');
+      return;
+    }
+    $('#actionForm').form('clear');
+    $('input[name=parentId]').attr('value',rows.id);
+    $('#w').window('open');
+  }
+  function doDelete()
+  {
+    var rows = $('#tg').treegrid('getSelected');
+    if(rows==null)
+    {
+      $.messager.alert('提示','请选择需要删除的菜单');
+      return;
+    }
+    if(rows.id=="-1")
+    {
+      $.messager.alert('提示','您选择的节点为虚拟根菜单，不能删除');
+      return;
+    }
+    $.messager.confirm('询问', '删除菜单将同时删除所有子孙菜单和菜单对应的权限点，确定删除？', function(rtn){
+      if (rtn){
+        $.ajax({
+          type: "POST",
+          url:"/system/menu/delete",
+          data: { menuId: rows.id},
+          success: function (data) {
+            var json=eval('('+data+')');
+            if(json.success==1)
+            {
+              $.messager.alert('提示','删除菜单成功');
+              $('#tg').treegrid('reload');
+            }
+            else
+            {
+              $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+            }
+          }
+        });
+      }
+    });
+  }
+  function doEdit()
+  {
+    var rows = $('#tg').treegrid('getSelected');
+    if(rows==null)
+    {
+      $.messager.alert('提示','请选择需要修改的数据');
+      return;
+    }
+    if(rows.id=="-1")
+    {
+      $.messager.alert('提示','您选择的节点为虚拟根菜单，不能修改');
+      return;
+    }
+    $.ajaxSetup({cache: false});
+    $('#actionForm').form('load',"/system/menu/edit?id="+rows.id);
+    $('#w').window('open');
+  }
+  function doBan()
+  {
+    var rows = $('#tg').treegrid('getSelected');
+    if(rows==null)
+    {
+      $.messager.alert('提示','请选择需要修改启禁状态的菜单');
+      return;
+    }
+    if(rows.treeCode.length!=9)
+    {
+      $.messager.confirm('询问', '非子菜单修改启禁状态将同时修改所有子孙节点状态，确定修改？', function(rtn){
+        if (rtn){
+          submitBanOrder(rows.id);
+        }
+      });
+    }
+    else
+    {
+      $.messager.confirm('询问', '确定要修改该菜单的启禁状态？', function(rtn){
+        if (rtn){
+          submitBanOrder(rows.id);
+        }
+      });
+    }
+  }
+  function submitBanOrder(id)
+  {
+    $.ajax({
+      type: "POST",
+      url:"/system/menu/ban",
+      data: { menuId: id},
+      success: function (data) {
+        var json=eval('('+data+')');
+        if(json.success==1)
+        {
+          $.messager.alert('提示','修改菜单的启禁状态成功');
+          $('#tg').treegrid('reload');
+        }
+        else
+        {
+          $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+        }
+      }
+    });
+  }
+  function doSave()
+  {
+    $('#actionForm').form('submit',{
+      url:"/system/menu/save",
+      onSubmit: function(){
+        if($('input[name=name]').val()=="")
+        {
+          $.messager.alert('提示','菜单名称不能为空');
+          return false;
+        }
+      },
+      success:function(data){
+        var json=eval('('+data+')');
+        if(json.success==1)
+        {
+          $('#w').window('close');
+          $.messager.alert('提示','保存菜单数据成功');
+          $('#tg').treegrid('reload');
+        }
+        else
+        {
+          $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+        }
+      }
+    });
+  }
+  function doClose()
+  {
+    $('#w').window('close');
+  }
+  function doSort()
+  {
+    var rows = $('#tg').treegrid('getSelected');
+    if(rows==null)
+    {
+      $.messager.alert('提示','请选择需要排序子节点的菜单');
+      return;
+    }
+    if(rows.treeCode.length==9)
+    {
+      $.messager.alert('提示','叶子节点不存在子节点，不能对其子节点排序');
+      return;
+    }
+    var param = {menuId : rows.id};
+    $("#sdg").datagrid("load", param);
+    $('#sw').window('open');
+  }
+  function doAllSort()
+  {
+    $.messager.confirm('询问', '全部重排将按现在的顺序挪移填补空白位置编码，确定重排？', function(rtn){
+      if (rtn){
+        $.ajax({
+          type: "POST",
+          url:"/system/menu/allSort",
+          success: function (data) {
+            var json=eval('('+data+')');
+            if(json.success==1)
+            {
+              $.messager.alert('提示','重排菜单数据成功');
+              $('#tg').treegrid('reload');
+            }
+            else
+            {
+              $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+            }
+          }
+        });
+      }
+    });
+  }
+  function doUp()
+  {
+    var rows = $('#sdg').datagrid('getSelected');
+    if(rows==null)
+    {
+      $.messager.alert('提示','请选择需要排序的菜单');
+      return;
+    }
+    var index = $('#sdg').datagrid('getRowIndex',rows);
+    if(index>0)
+    {
+      $('#sdg').datagrid('deleteRow',index);
+      $('#sdg').datagrid('insertRow',{
+        index:index-1,
+        row:rows
+      });
+      $('#sdg').datagrid('selectRow',index-1);
+    }
+  }
+  function doDown()
+  {
+    var rows = $('#sdg').datagrid('getSelected');
+    if(rows==null)
+    {
+      $.messager.alert('提示','请选择需要排序的菜单');
+      return;
+    }
+    var index = $('#sdg').datagrid('getRowIndex',rows);
+    if(index<$('#sdg').datagrid('getRows').length-1)
+    {
+      $('#sdg').datagrid('deleteRow',index);
+      $('#sdg').datagrid('insertRow',{
+        index:index+1,
+        row:rows
+      });
+      $('#sdg').datagrid('selectRow',index+1);
+    }
+  }
+  function doSaveSort()
+  {
+    var rows = $("#sdg").datagrid("getRows");
+    var isChange = false;
+    for(var i=0;i<rows.length-1;i++)
+    {
+      if(rows[i].treeCode>rows[i+1].treeCode)
+      {
+        isChange=true;
+        break;
+      }
+    }
+    if(isChange)
+    {
+      var id = "";
+      for(var i=0;i<rows.length;i++)
+      {
+        id += ";" + rows[i].id;
+      }
+      if(id.length>0)
+      {
+        $.ajax({
+          type: "POST",
+          url:"/system/menu/sort",
+          data: { menuId: id.substring(1)},
+          success: function (data) {
+            var json=eval('('+data+')');
+            if(json.success==1)
+            {
+              $.messager.alert('提示','菜单排序成功');
+              $('#tg').treegrid('reload');
+              $('#sw').window('close');
+            }
+            else
+            {
+              $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+            }
+          }
+        });
+      }
+    }
+    else
+    {
+      $.messager.alert('提示','菜单顺序没有改变，不需要保存');
+    }
+  }
+  function doExpand()
+  {
+    $('#tg').treegrid('expandAll');
+  }
+  function doCollapse()
+  {
+    $('#tg').treegrid('collapseAll');
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+<body>
+<div th:include="common/header.html"/>
+    <table id="dg" toolbar="#tb"></table>
+    <div id="tb">
+        &nbsp;数据源别名：<input type="text" id="aliasName" />
+        <a href="#" onclick="doSearch()" class="easyui-linkbutton" iconCls="icon-search" plain="true">查询</a>
+        <sys:permission code="editDatabaseSource">
+        <a href="#" onclick="doAdd()" class="easyui-linkbutton" iconCls="icon-add" plain="true">添加</a>
+        <a href="#" onclick="doEdit()" class="easyui-linkbutton" iconCls="icon-edit" plain="true">修改</a>
+        <a href="#" onclick="doDelete()" class="easyui-linkbutton" iconCls="icon-remove" plain="true">删除</a>
+        </sys:permission>
+    </div>
+    <div id="w" class="easyui-window" style="padding-left:15px;width:350;height:325;" title="维护数据源" modal="true">
+    	<br>
+        <form method="post" id="actionForm"> 
+            <input type="hidden" name="id" id="id"/>
+            <table> 
+                <tr>
+                <td class="info-td">数据源别名：</td>
+                <td><input type="text" id="alias" name="alias"/>&nbsp;<font color=red>*</font></td>
+                </tr>
+                <tr> 
+                <td class="info-td">IP地址：</td> 
+                <td><input type="text" id="ip" name="ip"/>&nbsp;<font color=red>*</font></td> 
+                </tr>
+                <tr>
+                <td class="info-td">数据库类型：</td>
+                <td>
+					<select class="easyui-combobox" id="dbType" name="dbType" data-options="editable:false,panelHeight:'auto'">
+					<sys:option code="dbType" />
+					</select>&nbsp;<font color=red>*</font>
+				</td>
+                </tr>
+                <tr> 
+                <td class="info-td">端口：</td> 
+                <td><input type="text" id="port" name="port"/>&nbsp;<font color=red>*</font></td> 
+                </tr>
+                <tr> 
+                <td class="info-td">数据库名：</td> 
+                <td><input type="text" id="dbName" name="dbName"/>&nbsp;<font color=red>*</font></td> 
+                </tr>
+                <tr>
+                <td class="info-td">用户名：</td>
+                <td><input type="text" id="userName" name="userName"/>&nbsp;<font color=red>*</font></td>
+                </tr>
+                <tr>
+                <td class="info-td">密码：</td>
+                <td><input type="text" id="password" name="password"/>&nbsp;<font color=red>*</font></td>
+                </tr>
+            </table>
+            <br>
+            <a class="easyui-linkbutton" iconcls="icon-ok" href="javascript:void(0)" onclick="doSave()">保存</a> 
+            <a class="easyui-linkbutton" iconcls="icon-cancel" href="javascript:void(0)" onclick="doClose()">关闭</a> 
+        </form>
+        <br>
+    </div>
+    <script type="text/javascript" th:inline="none">
+        $(function () { 
+            $('#w').window('close'); 
+            $('#dg').datagrid({
+                url:"/etl/databaseSource/init",
+                rownumbers:true,
+                title:'数据源列表',
+                border:false,
+                fit: true,
+                singleSelect:true,
+                pagination:true,
+                pageSize: 15,
+                pageList: [15,20,30],
+                beforePageText: '第',
+                afterPageText: '页    共 {pages} 页',  
+                displayMsg: '当前显示 {from} - {to} 条记录   共 {total} 条记录',
+                columns:[[
+                    {field:'alias',title:'别名',width:140,halign:'center'},
+                    {field:'dbTypeName',title:'数据库类型',width:100,align:'center'},
+                    {field:'ip',title:'IP地址',width:140,align:'center'},
+                    {field:'port',title:'端口',width:80,align:'center'},
+                    {field:'dbName',title:'数据库名',width:100,align:'center'},
+                    {field:'userName',title:'用户名',width:100,align:'center'},
+                    {field:'password',title:'密码',width:100,align:'center'}
+                ]]
+            });
+        });
+        function doAdd()
+        {
+            $('#actionForm').form('clear');
+            $('#dbType',$('#actionForm')).combobox('setValue','1');
+            $('#w').window('open'); 
+        }
+        function doDelete(){
+            var rows = $('#dg').datagrid('getSelected');
+            if(rows==null){
+                $.messager.alert('提示','请选择需要删除的数据'); 
+                return;
+            }
+            $.messager.confirm('询问', '确定要删除该数据信息？', function(rtn){
+                if (rtn){
+                    $.ajax({  
+                        type: "POST",
+                        url:"/etl/databaseSource/delete",
+                        data: {dictionaryId: rows.id},
+                        success: function (data) {
+                            var json=eval('('+data+')');  
+                            if(json.success==1){
+                                $.messager.alert('提示','删除数据成功');
+                                $('#dg').datagrid('reload');
+                            }else{
+                                $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+        function doEdit(){
+            var rows = $('#dg').datagrid('getSelected');
+            if(rows==null){
+                $.messager.alert('提示','请选择需要修改的数据'); 
+                return;
+            }
+            $('#id',$('#actionForm')).val(rows.id);
+            $('#alias',$('#actionForm')).val(rows.alias);
+            $('#dbType',$('#actionForm')).combobox('setValue',rows.dbType);
+            $('#ip',$('#actionForm')).val(rows.ip);
+            $('#port',$('#actionForm')).val(rows.port);
+            $('#dbName',$('#actionForm')).val(rows.dbName);
+            $('#userName',$('#actionForm')).val(rows.userName);
+            $('#password',$('#actionForm')).val(rows.password);
+            $('#w').window('open'); 
+        }
+        function doSave(){
+            $('#actionForm').form('submit',{
+                url:"/etl/databaseSource/save",
+                success:function(data){
+                    var json=eval('('+data+')');  
+                    if(json.success==1){
+                        $('#w').window('close');
+                        $.messager.alert('提示','保存数据成功');
+                        $('#dg').datagrid('load');
+                    }else{
+                        $.messager.alert('提示','数据提交处理失败，原因：'+json.info);
+                    }
+                }   
+            });
+        }
+        function doSearch(){
+            var param = {type: $("#aliasName").val()};
+            $("#dg").datagrid("alias", param);
+        }
+        function doClose(){
+            $('#w').window('close');
+        }
+    </script>
+</body>
+</html>

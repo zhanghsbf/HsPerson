@@ -1,0 +1,51 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sys="http://hspersonal.roy.com/thymeleaf/sys">
+  <meta charset="UTF-8">
+  <title>用户登录</title>
+  <link rel="stylesheet" type="text/css" href="/css/webLogin.css">
+</head>
+<body>
+<div th:include="common/webHeader.html"/>
+<div class="top_div"></div>
+<div class="main_div">
+  <div class="center_div">
+    <div class="left_div"></div>
+    <div class="login_div">
+      <br>
+      <form id="postForm" method="post" action="/web/login/check" onsubmit="return doCheck()">
+      <div class="labelClass">
+        　　UN：<input class="txtClass" type="text" id="loginName" name="loginName"/>
+      </div>
+      <div style="height:15px"></div>
+      <div class="labelClass">
+        　　PW：<input class="txtClass" type="password" id="password" name="password"/>
+      </div>
+      <div style="height:20px"></div>
+      <div style="width:100%;padding-left:30px;">
+        <input class="btnClass" type="submit" value="LOGIN" />
+        <input class="btnClass" type="reset" value="RESET" />
+      </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script type="text/javascript" src="/script/md5.js"></script>
+<script>
+
+  function doCheck()
+  {
+    if($("#loginName").val()==""){
+      alert('用户名不能为空');
+      return false;
+    }
+    if($("#password").val()==""){
+      alert('密码不能为空');
+      return false;
+    }
+    MD5_Typ = 'Typ32';
+    $("#password").val((MD5($("#password").val())));
+    return true;
+  }
+</script>
+</body>
+</html>

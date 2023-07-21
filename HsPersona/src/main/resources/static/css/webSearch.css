@@ -1,0 +1,30 @@
+@charset "utf-8";
+/* CSS Document */
+.context_body{width: 1228px;height: auto;margin:0px auto;}
+.advanced_menu{width:250px; margin: 0;padding: 0;text-align: left;display:inline-block;height: auto;}
+.advanced_menu_title{width:250px;height:34px;line-height:34px;font-weight:bold;background:#00A2CA;color:#FFFFFF}
+.advanced_menu_tree{border-bottom:solid #00A2CA 1px;border-right:solid #00A2CA 1px;border-left:solid #00A2CA 1px;width:243px;height:280px;padding-left:5px;overflow:auto;}
+.advanced_body{width:952px; text-align: left;display:inline-block;margin: 0;padding-left:10px;;height: auto;vertical-align: top;}
+
+.tag_area_label{width:192px;color:#FFFFFF;font-weight:bold;font-size:12px;}
+.tag_area_value{background:#FFFFFF;padding-bottom:5px;}
+.tag_select_div{border:solid 1px #95B8E7;display:inline-block;font-size:12px;line-height:initial;padding:3px;margin-top:5px;margin-left:5px;}
+
+.element_area a{color:#FFFFFF}
+.element_area a:hover{color:#FFFFFF}
+.element_area a:active{color:#FFFFFF}
+.element_area a:visited{color:#FFFFFF}
+
+.element_div{margin-top:5px;}
+.element_data_div{width:898px;float:left;}
+.element_area_label{width:192px;color:#FFFFFF;font-weight:bold;font-size:12px;}
+.element_area_label_div{width:160px;overflow:hidden;white-space:nowrap}
+.element_area_value{background:#FFFFFF;font-size:12px;padding:5px;}
+.element_area_delete{width:50px;background:#00A2CA;color:#FFFFFF;text-align:center;font-size:12px;}
+
+.element_chk{vertical-align:text-top;margin-top:0px}
+.element_chk_div{display:inline-block;}
+.element_input_text{height:21px;width:250px;border:solid 1px #95B8E7}
+.element_input_number{height:21px;width:100px;border:solid 1px #95B8E7}
+
+.btn_search{text-align:right;margin-top:5px;margin-bottom:5px;width:952px;}
