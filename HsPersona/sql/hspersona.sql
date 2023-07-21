@@ -499,7 +499,7 @@ CREATE TABLE `sys_user`  (
 -- Records of sys_user
 -- ----------------------------
 INSERT INTO `sys_user` VALUES ('1', 'admin', '57BA172A6BE125CCA2F449826F9980CA', '管理员', '2021-12-06 10:45:53', 1, 'ID1402241153514684476991034', '1,2,3');
-INSERT INTO `sys_user` VALUES ('ID1709121606447652965219471', 'test', '21232F297A57A5A743894A0E4A801FC3', '测试人员', '2017-09-12 16:07:22', 1, 'ID1402241153514684476991034', '1,2,3');
+INSERT INTO `sys_user` VALUES ('ID1709121606447652965219471', 'application.properties', '21232F297A57A5A743894A0E4A801FC3', '测试人员', '2017-09-12 16:07:22', 1, 'ID1402241153514684476991034', '1,2,3');
 
 -- ----------------------------
 -- Table structure for sys_user_role
@@ -542,7 +542,7 @@ CREATE TABLE `tag_account`  (
 -- Records of tag_account
 -- ----------------------------
 INSERT INTO `tag_account` VALUES ('ID1701101349302871312555201', '1', 'admin', '57BA172A6BE125CCA2F449826F9980CA', 'admin', '2021-12-15 16:17:31', 1, NULL, '系统用户', 1);
-INSERT INTO `tag_account` VALUES ('ID1709121606448361252976369', 'ID1709121606447652965219471', 'test', '21232F297A57A5A743894A0E4A801FC3', '测试人员', '2017-09-12 16:06:44', 1, NULL, '系统用户', 1);
+INSERT INTO `tag_account` VALUES ('ID1709121606448361252976369', 'ID1709121606447652965219471', 'application.properties', '21232F297A57A5A743894A0E4A801FC3', '测试人员', '2017-09-12 16:06:44', 1, NULL, '系统用户', 1);
 
 -- ----------------------------
 -- Table structure for tag_base_type
@@ -1201,10 +1201,10 @@ INSERT INTO `tag_base_type` VALUES ('ID1607072155411398743731468', 'ID1607072155
 INSERT INTO `tag_base_type` VALUES ('ID1607072155411398743731016', 'ID1607072155411398743731468', 'PreventionIndication', 'PreventionIndication', '00002000310001400001', 3, 0, 'An indication for preventing an underlying condition, symptom, etc.');
 INSERT INTO `tag_base_type` VALUES ('ID1607072155411398743731338', 'ID1607072155411398743731468', 'ApprovedIndication', 'ApprovedIndication', '00002000310001400002', 3, 0, 'An indication for a medical therapy that has been formally specified or approved by a regulatory body that regulates use of the therapy; for example, the US FDA approves indications for most drugs in the US.');
 INSERT INTO `tag_base_type` VALUES ('ID1607072155411398743731373', 'ID1607072155411398743731468', 'TreatmentIndication', 'TreatmentIndication', '00002000310001400003', 3, 0, 'An indication for treating an underlying condition, symptom, etc.');
-INSERT INTO `tag_base_type` VALUES ('ID1607072155411398743731491', 'ID1607072155411398743731028', 'MedicalTest', 'MedicalTest', '000020003100015', 3, 0, 'Any medical test, typically performed for diagnostic purposes.');
+INSERT INTO `tag_base_type` VALUES ('ID1607072155411398743731491', 'ID1607072155411398743731028', 'MedicalTest', 'MedicalTest', '000020003100015', 3, 0, 'Any medical application.properties, typically performed for diagnostic purposes.');
 INSERT INTO `tag_base_type` VALUES ('ID1607072155411398743731039', 'ID1607072155411398743731491', 'MedicalTestPanel', 'MedicalTestPanel', '00002000310001500001', 3, 0, 'Any collection of tests commonly ordered together.');
-INSERT INTO `tag_base_type` VALUES ('ID1607072155411398743731255', 'ID1607072155411398743731491', 'BloodTest', 'BloodTest', '00002000310001500002', 3, 0, 'A medical test performed on a sample of a patient\"s blood.');
-INSERT INTO `tag_base_type` VALUES ('ID1607072155411398743731426', 'ID1607072155411398743731491', 'PathologyTest', 'PathologyTest', '00002000310001500003', 3, 0, 'A medical test performed by a laboratory that typically involves examination of a tissue sample by a pathologist.');
+INSERT INTO `tag_base_type` VALUES ('ID1607072155411398743731255', 'ID1607072155411398743731491', 'BloodTest', 'BloodTest', '00002000310001500002', 3, 0, 'A medical application.properties performed on a sample of a patient\"s blood.');
+INSERT INTO `tag_base_type` VALUES ('ID1607072155411398743731426', 'ID1607072155411398743731491', 'PathologyTest', 'PathologyTest', '00002000310001500003', 3, 0, 'A medical application.properties performed by a laboratory that typically involves examination of a tissue sample by a pathologist.');
 INSERT INTO `tag_base_type` VALUES ('ID1607072155411398743731575', 'ID1607072155411398743731491', 'ImagingTest', 'ImagingTest', '00002000310001500004', 3, 0, 'Any medical imaging modality typically used for diagnostic purposes.');
 INSERT INTO `tag_base_type` VALUES ('ID1607072155411398743731541', 'ID1607072155411398743731028', 'MedicalContraindication', 'MedicalContraindication', '000020003100016', 3, 0, 'A condition or factor that serves as a reason to withhold a certain medical therapy. Contraindications can be absolute (there are no reasonable circumstances for undertaking a course of action) or relative (the patient is at higher risk of complications, but that these risks may be outweighed by other considerations or mitigated by other measures).');
 INSERT INTO `tag_base_type` VALUES ('ID1607072155411398743731577', 'ID1607072155411398743731028', 'AnatomicalStructure', 'AnatomicalStructure', '000020003100017', 3, 0, 'Any part of the human body, typically a component of an anatomical system. Organs, tissues, and cells are all anatomical structures.');
@@ -3434,7 +3434,7 @@ INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371250', 'addi
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371251', 'broadcastOfEvent', 'broadcastOfEvent', 1, 'The event being broadcast such as a sporting event or awards ceremony.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371252', 'stageAsNumber', 'stageAsNumber', 1, 'The stage represented as a number, e.g. 3.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371253', 'hostingOrganization', 'hostingOrganization', 1, 'The organization (airline, travelers\" club, etc.) the membership is made with.');
-INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371254', 'affectedBy', 'affectedBy', 1, 'Drugs that affect the test\"s results.');
+INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371254', 'affectedBy', 'affectedBy', 1, 'Drugs that affect the application.properties\"s results.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371255', 'aspect', 'aspect', 1, 'An aspect of medical practice that is considered on the page, such as \"diagnosis\", \"treatment\", \"causes\", \"prognosis\", \"etiology\", \"epidemiology\", etc.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371256', 'outcome', 'outcome', 1, 'Expected or actual outcomes of the study.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371257', 'sport', 'sport', 1, 'A type of sport (e.g. Baseball).');
@@ -3671,7 +3671,7 @@ INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371490', 'expe
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371491', 'serviceOutput', 'serviceOutput', 1, 'The tangible thing generated by the service, e.g. a passport, permit, etc.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371492', 'jobLocation', 'jobLocation', 1, 'A (typically single) geographic location associated with the job position.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371493', 'httpMethod', 'httpMethod', 1, 'An HTTP method that specifies the appropriate HTTP method for a request to an HTTP EntryPoint. Values are capitalized strings as used in HTTP.');
-INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371494', 'typicalTest', 'typicalTest', 1, 'A medical test typically performed given this condition.');
+INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371494', 'typicalTest', 'typicalTest', 1, 'A medical application.properties typically performed given this condition.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371495', 'significantLink', 'significantLink', 1, 'One of the more significant URLs on the page. Typically, these are the non-navigation links that are clicked on the most.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371496', 'performer', 'performer', 1, 'A performer at the event&#x2014;for example, a presenter, musician, musical group or actor.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371497', 'leiCode', 'leiCode', 1, 'An organization identifier that uniquely identifies a legal entity as defined in ISO 17442.');
@@ -3745,7 +3745,7 @@ INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371565', 'sugg
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371566', 'position', 'position', 1, 'The position of an item in a series or sequence of items.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371567', 'encodings', 'encodings', 1, 'A media object that encodes this CreativeWork.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371568', 'contraindication', 'contraindication', 1, 'A contraindication for this therapy.');
-INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371569', 'identifyingTest', 'identifyingTest', 1, 'A diagnostic test that can identify this sign.');
+INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371569', 'identifyingTest', 'identifyingTest', 1, 'A diagnostic application.properties that can identify this sign.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371570', 'printPage', 'printPage', 1, 'If this NewsArticle appears in print, this field indicates the name of the page on which the article is found. Please note that this field is intended for the exact page name (e.g. A5, B18).');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371572', 'requiredGender', 'requiredGender', 1, 'Audiences defined by a person\"s gender.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371573', 'aggregateRating', 'aggregateRating', 1, 'The overall rating, based on a collection of reviews or ratings, of the item.');
@@ -3755,7 +3755,7 @@ INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371577', 'long
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371578', 'salaryCurrency', 'salaryCurrency', 1, 'The currency (coded using ISO 4217, http://en.wikipedia.org/wiki/ISO_4217 ) used for the main salary information in this job posting or for this employee.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371579', 'geoMidpoint', 'geoMidpoint', 1, 'Indicates the GeoCoordinates at the centre of a GeoShape e.g. GeoCircle.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371580', 'workExample', 'workExample', 1, 'Example/instance/realization/derivation of the concept of this creative work. eg. The paperback edition, first edition, or eBook.');
-INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371581', 'subTest', 'subTest', 1, 'A component test of the panel.');
+INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371581', 'subTest', 'subTest', 1, 'A component application.properties of the panel.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371582', 'contentReferenceTime', 'contentReferenceTime', 1, 'The specific time described by a creative work, for works (e.g. articles, video objects etc.) that emphasise a particular moment within an Event.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371583', 'seasons', 'seasons', 1, 'A season in a media series.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371584', 'alignmentType', 'alignmentType', 1, 'A category of alignment between the learning resource and the framework node. Recommended values include: \"assesses\", \"teaches\", \"requires\", \"textComplexity\", \"readingLevel\", \"educationalSubject\", and \"educationLevel\".');
@@ -3847,7 +3847,7 @@ INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371671', 'busN
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371672', 'validIn', 'validIn', 1, 'The geographic area where the permit is valid.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371673', 'publicationType', 'publicationType', 1, 'The type of the medical article, taken from the US NLM MeSH publication type catalog. See also <a href=\"http://www.nlm.nih.gov/mesh/pubtypes.html\">MeSH documentation</a>.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371674', 'employee', 'employee', 1, 'Someone working for this organization.');
-INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371675', 'usesDevice', 'usesDevice', 1, 'Device used to perform the test.');
+INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371675', 'usesDevice', 'usesDevice', 1, 'Device used to perform the application.properties.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371676', 'carbohydrateContent', 'carbohydrateContent', 1, 'The number of grams of carbohydrates.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371677', 'servingSize', 'servingSize', 1, 'The serving size, in terms of the number of volume or mass.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371678', 'gtin13', 'gtin13', 1, 'The <a href=\"http://ocp.gs1.org/sites/glossary/en-gb/Pages/GTIN-13.aspx\">GTIN-13</a> code of the product, or the product to which the offer refers. This is equivalent to 13-digit ISBN codes and EAN UCC-13. Former 12-digit UPC codes can be converted into a GTIN-13 code by simply adding a preceeding zero. See <a href=\"http://www.gs1.org/barcodes/technical/idkeys/gtin\">GS1 GTIN Summary</a> for more details.');
@@ -4091,7 +4091,7 @@ INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371919', 'acti
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371920', 'priceValidUntil', 'priceValidUntil', 1, 'The date after which the price is no longer available.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371921', 'applicationCategory', 'applicationCategory', 1, 'Type of software application, e.g. \"Game, Multimedia\".');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371922', 'suggestedMinAge', 'suggestedMinAge', 1, 'Minimal age recommended for viewing content.');
-INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371923', 'signDetected', 'signDetected', 1, 'A sign detected by the test.');
+INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371923', 'signDetected', 'signDetected', 1, 'A sign detected by the application.properties.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371924', 'primaryImageOfPage', 'primaryImageOfPage', 1, 'Indicates the main image on the page.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371925', 'workPresented', 'workPresented', 1, 'The movie presented during this event.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371926', 'preOp', 'preOp', 1, 'A description of the workup, testing, and other preparations required before implanting this device.');
@@ -4109,7 +4109,7 @@ INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371938', 'diag
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371939', 'orderItemNumber', 'orderItemNumber', 1, 'The identifier of the order item.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371940', 'recipe', 'recipe', 1, 'A sub property of instrument. The recipe/instructions used to perform the action.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371941', 'distribution', 'distribution', 1, 'A downloadable form of this dataset, at a specific location, in a specific format.');
-INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371942', 'availableTest', 'availableTest', 1, 'A diagnostic test or procedure offered by this lab.');
+INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371942', 'availableTest', 'availableTest', 1, 'A diagnostic application.properties or procedure offered by this lab.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371943', 'trackingUrl', 'trackingUrl', 1, 'Tracking url for the parcel delivery.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371944', 'paymentDueDate', 'paymentDueDate', 1, 'The date that payment is due.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734371945', 'relatedLink', 'relatedLink', 1, 'A link related to this web page, for example to other related web pages.');
@@ -4172,7 +4172,7 @@ INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734372001', 'body
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734372002', 'normalRange', 'normalRange', 1, 'Range of acceptable values for a typical patient, when applicable.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734372003', 'codingSystem', 'codingSystem', 1, 'The coding system, e.g. \"ICD-10\".');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734372004', 'valuePattern', 'valuePattern', 1, 'Specifies a regular expression for testing literal values according to the HTML spec.');
-INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734372005', 'tissueSample', 'tissueSample', 1, 'The type of tissue sample required for the test.');
+INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734372005', 'tissueSample', 'tissueSample', 1, 'The type of tissue sample required for the application.properties.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734372006', 'includesObject', 'includesObject', 1, 'This links to a node or nodes indicating the exact quantity of the products included in the offer.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734372007', 'characterName', 'characterName', 1, 'The name of a character played in some acting or performing role, i.e. in a PerformanceRole.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734372008', 'annualPercentageRate', 'annualPercentageRate', 1, 'The annual rate that is charged for borrowing (or made by investing), expressed as a single percentage number that represents the actual yearly cost of funds over the term of a loan. This includes any fees or additional costs associated with the transaction.');
@@ -4181,7 +4181,7 @@ INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734372010', 'asse
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734372011', 'regionsAllowed', 'regionsAllowed', 1, 'The regions where the media is allowed. If not specified, then it\"s assumed to be allowed everywhere. Specify the countries in <a href=\"http://en.wikipedia.org/wiki/ISO_3166\">ISO 3166 format</a>.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734372012', 'coverageStartTime', 'coverageStartTime', 1, 'The time when the live blog will begin covering the Event. Note that coverage may begin before the Event\"s start time. The LiveBlogPosting may also be created before coverage begins.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734372013', 'attendees', 'attendees', 1, 'A person attending the event.');
-INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734372014', 'usedToDiagnose', 'usedToDiagnose', 1, 'A condition the test is used to diagnose.');
+INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734372014', 'usedToDiagnose', 'usedToDiagnose', 1, 'A condition the application.properties is used to diagnose.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734372015', 'permitAudience', 'permitAudience', 1, 'The target audience for this permit.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734372016', 'object', 'object', 1, 'The object upon the action is carried out, whose state is kept intact or changed. Also known as the semantic roles patient, affected or undergoer (which change their state) or theme (which doesn\"t). e.g. John read <em>a book</em>.');
 INSERT INTO `tag_data_type_element` VALUES ('ID1607072311435458734372017', 'rangeIncludes', 'rangeIncludes', 1, 'Relates a property to a class that constitutes (one of) the expected type(s) for values of the property.');
@@ -4772,7 +4772,7 @@ CREATE TABLE `tag_ext_type_field_express`  (
 -- ----------------------------
 -- Records of tag_ext_type_field_express
 -- ----------------------------
-INSERT INTO `tag_ext_type_field_express` VALUES ('ID1904241516378690315988317', 2, 'ID1709251648375309456916366', 1, '${n}test');
+INSERT INTO `tag_ext_type_field_express` VALUES ('ID1904241516378690315988317', 2, 'ID1709251648375309456916366', 1, '${n}application.properties');
 
 -- ----------------------------
 -- Table structure for tag_param_in
